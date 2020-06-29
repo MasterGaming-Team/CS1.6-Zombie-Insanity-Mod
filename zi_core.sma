@@ -3,15 +3,23 @@
 #include <fakemeta>
 #include <hamsandwich>
 #include <mg_core_const>
-#include <zi_core>
+#include <zi_core_const>
 
 #define PLUGIN "[MG][ZI] Core plugin"
-#define VERSIOn "1.0"
+#define VERSION "1.0"
 #define AUTHOR "Vieni"
 
 #define flag_get(%1,%2) %1 & ((1 << (%2 & 31)))
 #define flag_set(%1,%2) %1 |= (1 << (%2 & 31))
 #define flag_unset(%1,%2) %1 &= ~(1 << (%2 & 31))
+
+new Array:arrayGamemodeId
+new Array:arrayGamemodeName
+new Array:arrayGamemodeType
+new Array:arrayGamemodeAllowLaser
+new Array:arrayGamemodeAllowShield
+new Array:arrayGamemodeAllowInfect
+new Array:arrayGamemodeAllowRespawn
 
 new Array:arrayClassZombieId
 new Array:arrayClassZombieName
@@ -38,8 +46,12 @@ new Array:arrayClassHeroId
 new Array:arrayClassHeroName
 new Array:arrayClassHeroTeam
 
+new bool:gAllowLaser, bool:gAllowShield, bool:gAllowInfect, bool:gAllowRespawn
+
 new gUserClassZombieNext[33], gUserClassZombieSubNext[33], gUserClassHumanNext[33]
 new gUserClassHero[33], gUserClassZombie[33], gUserClassZombieSub[33], gUserClassHuman[33]
+
+new retValue
 
 new gForwardUserInfect, gForwardUserCure, gForwardUserHeroisate
 
@@ -54,6 +66,14 @@ public plugin_init()
 
 public plugin_natives()
 {
+    arrayGamemodeId = ArrayCreate(1)
+    arrayGamemodeName = ArrayCreate(64)
+    arrayGamemodeType = ArrayCreate(1)
+    arrayGamemodeAllowLaser = ArrayCreate(1)
+    arrayGamemodeAllowShield = ArrayCreate(1)
+    arrayGamemodeAllowInfect = ArrayCreate(1)
+    arrayGamemodeAllowRespawn = ArrayCreate(1)
+
     arrayClassZombieId = ArrayCreate(1)
     arrayClassZombieName = ArrayCreate(64)
     arrayClassZombieDesc = ArrayCreate(64)
@@ -79,15 +99,28 @@ public plugin_natives()
     arrayClassHeroName = ArrayCreate(64)
     arrayClassHeroTeam = ArrayCreate(1)
 
+    register_native("zi_core_arrayid_gamemode_get", "native_core_arrayid_gamemode_get")
     register_native("zi_core_arrayid_zombie_get", "native_core_arrayid_zombie_get")
     register_native("zi_core_arrayid_zombiesub_get", "native_core_arrayid_zombiesub_get")
     register_native("zi_core_arrayid_human_get", "native_core_arrayid_human_get")
     register_native("zi_core_arrayid_hero_get", "native_core_arrayid_hero_get")
+    
+    register_native("zi_core_allow_laser", "native_core_allow_laser")
+    register_native("zi_core_allow_shield", "native_core_allow_shield")
+    register_native("zi_core_allow_infect", "native_core_allow_infect")
+    register_native("zi_core_allow_respawn", "native_core_allow_respawn")
+
+    register_native("zi_core_gamemode_reg", "native_core_gamemode_reg")
 
     register_native("zi_core_class_zombie_reg", "native_core_class_zombie_reg")
     register_native("zi_core_class_zombiesub_reg", "native_core_class_zombiesub_reg")
     register_native("zi_core_class_human_reg", "native_core_class_human_reg")
     register_native("zi_core_class_hero_reg", "native_core_class_hero_reg")
+
+    register_native("zi_core_class_zombie_arrayslot_get", "native_core_class_zombie_arrayslot_get")
+    register_native("zi_core_class_zombiesub_arrayslot_get", "native_core_class_zombiesub_arrayslot_get")
+    register_native("zi_core_class_human_arrayslot_get", "native_core_class_human_arrayslot_get")
+    register_native("zi_core_class_hero_arrayslot_get", "native_core_class_hero_arrayslot_get")
 
     register_native("zi_core_client_zombie_get", "native_core_client_zombie_get")
     register_native("zi_core_client_zombiesub_get", "native_core_client_zombiesub_get")
@@ -102,79 +135,154 @@ public plugin_natives()
     register_native("zi_core_client_heroisate", "native_core_client_heroisate")
 }
 
+public native_core_arrayid_gamemode_get(plugin_id, param_num)
+{
+    if(get_param(1) != -1)
+        set_param_byref(1, int:arrayGamemodeId)
+    
+    if(get_param(2) != -1)
+        set_param_byref(2, int:arrayGamemodeName)
+    
+    if(get_param(3) != -1)
+        set_param_byref(3, int:arrayGamemodeType)
+    
+    if(get_param(4) != -1)
+        set_param_byref(4, int:arrayGamemodeAllowLaser)
+
+    if(get_param(5) != -1)
+        set_param_byref(5, int:arrayGamemodeAllowShield)
+
+    if(get_param(6) != -1)
+        set_param_byref(6, int:arrayGamemodeAllowInfect)
+
+    if(get_param(7) != -1)
+        set_param_byref(7, int:arrayGamemodeAllowRespawn)
+}
+
 public native_core_arrayid_zombie_get(plugin_id, param_num)
 {
     if(get_param(1) != -1)
-        set_param_byref(1, arrayClassZombieId)
+        set_param_byref(1, int:arrayClassZombieId)
     
     if(get_param(2) != -1)
-        set_param_byref(2, arrayClassZombieName)
+        set_param_byref(2, int:arrayClassZombieName)
     
     if(get_param(3) != -1)
-        set_param_byref(3, arrayClassZombieDesc)
+        set_param_byref(3, int:arrayClassZombieDesc)
     
     if(get_param(4) != -1)
-        set_param_byref(4, arrayClassZombieModel)
+        set_param_byref(4, int:arrayClassZombieModel)
 }
 
 public native_core_arrayid_zombiesub_get(plugin_id, param_num)
 {
     if(get_param(1) != -1)
-        set_param_byref(1, arrayClassZombieSubParent)
+        set_param_byref(1, int:arrayClassZombieSubParent)
     
     if(get_param(2) != -1)
-        set_param_byref(2, arrayClassZombieSubId)
+        set_param_byref(2, int:arrayClassZombieSubId)
     
     if(get_param(3) != -1)
-        set_param_byref(3, arrayClassZombieSubName)
+        set_param_byref(3, int:arrayClassZombieSubName)
     
     if(get_param(4) != -1)
-        set_param_byref(4, arrayClassZombieSubDesc)
+        set_param_byref(4, int:arrayClassZombieSubDesc)
 
     if(get_param(5) != -1)
-        set_param_byref(5, arrayClassZombieSubModel)
+        set_param_byref(5, int:arrayClassZombieSubModel)
 
     if(get_param(6) != -1)
-        set_param_byref(6, arrayClassZombieSubBody)
+        set_param_byref(6, int:arrayClassZombieSubBody)
 
     if(get_param(7) != -1)
-        set_param_byref(7, arrayClassZombieSubHealth)
+        set_param_byref(7, int:arrayClassZombieSubHealth)
 
     if(get_param(8) != -1)
-        set_param_byref(8, arrayClassZombieSubSpeed)
+        set_param_byref(8, int:arrayClassZombieSubSpeed)
     
     if(get_param(9) != -1)
-        set_param_byref(9, arrayClassZombieSubGravity)
+        set_param_byref(9, int:arrayClassZombieSubGravity)
 }
 
 public native_core_arrayid_human_get(plugin_id, param_num)
 {
     if(get_param(1) != -1)
-        set_param_byref(1, arrayClassHumanId)
+        set_param_byref(1, int:arrayClassHumanId)
     
     if(get_param(2) != -1)
-        set_param_byref(2, arrayClassHumanName)
+        set_param_byref(2, int:arrayClassHumanName)
     
     if(get_param(3) != -1)
-        set_param_byref(3, arrayClassHumanDesc)
+        set_param_byref(3, int:arrayClassHumanDesc)
     
     if(get_param(4) != -1)
-        set_param_byref(4, arrayClassHumanModel)
+        set_param_byref(4, int:arrayClassHumanModel)
 
     if(get_param(5) != -1)
-        set_param_byref(5, arrayClassHumanBody)
+        set_param_byref(5, int:arrayClassHumanBody)
 }
 
 public native_core_arrayid_hero_get(plugin_id, param_num)
 {
     if(get_param(1) != -1)
-        set_param_byref(1, arrayClassHeroId)
+        set_param_byref(1, int:arrayClassHeroId)
     
     if(get_param(2) != -1)
-        set_param_byref(2, arrayClassHeroName)
+        set_param_byref(2, int:arrayClassHeroName)
     
     if(get_param(3) != -1)
-        set_param_byref(3, arrayClassHeroTeam)
+        set_param_byref(3, int:arrayClassHeroTeam)
+}
+
+public native_core_allow_laser(plugin_id, param_num)
+{
+    return gAllowLaser
+}
+
+public native_core_allow_shield(plugin_id, param_num)
+{
+    return gAllowShield
+}
+
+public native_core_allow_infect(plugin_id, param_num)
+{
+    return gAllowInfect
+}
+
+public native_core_allow_respawn(plugin_id, param_num)
+{
+    return gAllowRespawn
+}
+
+public native_core_gamemode_reg(plugin_id, param_num)
+{
+    new lGamemodeId = get_param(1)
+
+    if(ArrayFindValue(arrayGamemodeId, lGamemodeId) != -1)
+    {
+        log_amx("[GAMEMODEREG] Gamemode's already registered! (%d)", lGamemodeId)
+        return ZI_GMID_NONE
+    }
+
+    new lGamemodeName[64], lGamemodeType, lGamemodeAllowLaser, lGamemodeAllowShield, lGamemodeAllowInfect, lGamemodeAllowRespawn
+
+    get_string(2, lGamemodeName, charsmax(lGamemodeName))
+
+    lGamemodeType = get_param(3)
+    lGamemodeAllowLaser = get_param(4)
+    lGamemodeAllowShield = get_param(5)
+    lGamemodeAllowInfect = get_param(6)
+    lGamemodeAllowRespawn = get_param(7)
+
+    ArrayPushCell(arrayGamemodeId, lGamemodeId)
+    ArrayPushString(arrayGamemodeName, lGamemodeName)
+    ArrayPushCell(arrayGamemodeType, lGamemodeType)
+    ArrayPushCell(arrayGamemodeAllowLaser, lGamemodeAllowLaser)
+    ArrayPushCell(arrayGamemodeAllowShield, lGamemodeAllowShield)
+    ArrayPushCell(arrayGamemodeAllowInfect, lGamemodeAllowInfect)
+    ArrayPushCell(arrayGamemodeAllowRespawn, lGamemodeAllowRespawn)
+
+    return lGamemodeId
 }
 
 public native_core_class_zombie_reg(plugin_id, param_num)
@@ -230,7 +338,7 @@ public native_core_class_zombiesub_reg(plugin_id, param_num)
     lClassGravity = get_param_f(9)
 
     if(!lClassModel[0])
-        ArrayGetString(arrayClassZombieModel, ArrayFindValue(arrayClassZombieId, lParentClassID), lClassName, charsmax(lClassName))
+        ArrayGetString(arrayClassZombieModel, ArrayFindValue(arrayClassZombieId, lParentClassId), lClassName, charsmax(lClassName))
 
     ArrayPushCell(arrayClassZombieSubParent, lParentClassId)
     ArrayPushCell(arrayClassZombieId, lClassId)
@@ -294,9 +402,53 @@ public native_core_class_hero_reg(plugin_id, param_num)
     return lClassId
 }
 
+public native_core_class_zombie_arrayslot_get(plugin_id, param_num)
+{
+    new lClassId = get_param(1)
+    new lArrayId = ArrayFindValue(arrayClassZombieId, lClassId)
+
+    if(lArrayId == -1)
+        log_amx("[CLASSZOMBIEARRAYSLOTGET] Class is not found! (%d)", lClassId)
+
+    return lArrayId
+}
+
+public native_core_class_zombiesub_arrayslot_get(plugin_id, param_num)
+{
+    new lClassId = get_param(1)
+    new lArrayId = ArrayFindValue(arrayClassZombieSubId, lClassId)
+
+    if(lArrayId == -1)
+        log_amx("[CLASSZOMBIESUBARRAYSLOTGET] Class is not found! (%d)", lClassId)
+
+    return lArrayId
+}
+
+public native_core_class_human_arrayslot_get(plugin_id, param_num)
+{
+    new lClassId = get_param(1)
+    new lArrayId = ArrayFindValue(arrayClassHumanId, lClassId)
+
+    if(lArrayId == -1)
+        log_amx("[CLASSHUMANARRAYSLOTGET] Class is not found! (%d)", lClassId)
+
+    return lArrayId
+}
+
+public native_core_class_hero_arrayslot_get(plugin_id, param_num)
+{
+    new lClassId = get_param(1)
+    new lArrayId = ArrayFindValue(arrayClassHeroId, lClassId)
+
+    if(lArrayId == -1)
+        log_amx("[CLASSHEROARRAYSLOTGET] Class is not found! (%d)", lClassId)
+
+    return lArrayId
+}
+
 public native_core_client_zombie_get(plugin_id, param_num)
 {
-    static id, bool:lNext
+    static id, lNext
     id = get_param(1)
     lNext = get_param(2)
 
@@ -305,7 +457,7 @@ public native_core_client_zombie_get(plugin_id, param_num)
 
 public native_core_client_zombiesub_get(plugin_id, param_num)
 {
-    static id, bool:lNext
+    static id, lNext
     id = get_param(1)
     lNext = get_param(2)
 
@@ -314,7 +466,7 @@ public native_core_client_zombiesub_get(plugin_id, param_num)
 
 public native_core_client_human_get(plugin_id, param_num)
 {
-    static id, bool:lNext
+    static id, lNext
     id = get_param(1)
     lNext = get_param(2)
 
@@ -331,7 +483,7 @@ public native_core_client_hero_get(plugin_id, param_num)
 
 public native_core_client_zombie_set(plugin_id, param_num)
 {
-    static id, lClassId, lClassSubId, bool:lCurrent
+    static id, lClassId, lClassSubId, lCurrent
 
     id = get_param(1)
     lClassId = get_param(2)
@@ -356,7 +508,7 @@ public native_core_client_zombie_set(plugin_id, param_num)
 
 public native_core_client_human_set(plugin_id, param_num)
 {
-    static id, lClassId, bool:lCurrent
+    static id, lClassId, lCurrent
 
     id = get_param(1)
     lClassId = get_param(2)
@@ -385,7 +537,7 @@ public native_core_client_infect(plugin_id, param_num)
     if(!attacker)
         attacker = victim
 
-    return infectPlayer(victim, attacker)
+    return infectPlayer(victim, attacker, gUserClassZombieNext[victim], gUserClassZombieSubNext[victim])
 }
 
 public native_core_client_cure(plugin_id, param_num)
@@ -397,7 +549,7 @@ public native_core_client_cure(plugin_id, param_num)
     if(!attacker)
         attacker = victim
     
-    return curePlayer(victim, attacker)
+    return curePlayer(victim, attacker, gUserClassHumanNext[victim])
 }
 
 public native_core_client_heroisate(plugin_id, param_num)
@@ -414,10 +566,10 @@ infectPlayer(victim, attacker, zombieClass, subClass)
     if(!is_user_alive(victim))
         return false
 
-    gUserClassZombie[id] = zombieClass
-    gUserClassZombieSub[id] = subClass
-    gUserClassHuman[id] = ZI_CLASS_NONE
-    gUserClassHero[id] = ZI_CLASS_NONE
+    gUserClassZombie[victim] = zombieClass
+    gUserClassZombieSub[victim] = subClass
+    gUserClassHuman[victim] = ZI_CLASS_NONE
+    gUserClassHero[victim] = ZI_CLASS_NONE
 
     ExecuteForward(gForwardUserInfect, retValue, victim, attacker, zombieClass, subClass)
     return true
@@ -425,13 +577,13 @@ infectPlayer(victim, attacker, zombieClass, subClass)
 
 curePlayer(victim, attacker, humanClass)
 {
-    if(!is_user_alive(id))
+    if(!is_user_alive(victim))
         return false
     
-    gUserClassZombie[id] = ZI_CLASS_NONE
-    gUserClassZombieSub[id] = ZI_CLASS_NONE
-    gUserClassHuman[id] = humanClass
-    gUserClassHero[id] = ZI_CLASS_NONE
+    gUserClassZombie[victim] = ZI_CLASS_NONE
+    gUserClassZombieSub[victim] = ZI_CLASS_NONE
+    gUserClassHuman[victim] = humanClass
+    gUserClassHero[victim] = ZI_CLASS_NONE
 
     ExecuteForward(gForwardUserCure, retValue, victim, attacker, humanClass)
     return true
