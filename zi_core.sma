@@ -3,6 +3,7 @@
 #include <fakemeta>
 #include <hamsandwich>
 #include <mg_core_const>
+#include <zi_core>
 
 #define PLUGIN "[MG][ZI] Core plugin"
 #define VERSIOn "1.0"
@@ -92,9 +93,7 @@ public plugin_natives()
     register_native("zi_core_client_hero_get", "native_core_client_hero_get")
 
     register_native("zi_core_client_zombie_set", "native_core_client_zombie_set")
-    register_native("zi_core_client_zombiesub_set", "native_core_client_zombiesub_set")
     register_native("zi_core_client_human_set", "native_core_client_human_set")
-    register_native("zi_core_client_hero_set", "zi_core_client_hero_set")
 
     register_native("zi_core_client_infect", "native_core_client_infect")
     register_native("zi_core_client_cure", "native_core_client_cure")
@@ -330,7 +329,7 @@ public native_core_client_hero_get(plugin_id, param_num)
 
 public native_core_client_zombie_set(plugin_id, param_num)
 {
-    static id, lClassId, bool:lCurrent
+    static id, lClassId, lClassSubId, bool:lCurrent
 
     id = get_param(1)
     lClassId = get_param(2)
@@ -344,31 +343,73 @@ public native_core_client_zombie_set(plugin_id, param_num)
         return true
     }
 
-    if(lClassId == -1)
+    if(lClassId == ZI_CLASS_NONE)
+    {
         lClassId = gUserClassZombieNext[id]
-    
-    return infectPlayer(id, lClassId, lClassSubId)
+        lClassSubId = gUserClassZombieSubNext[id]
+    }
+
+    return infectPlayer(id, id, lClassId, lClassSubId)
+}
+
+public native_core_client_human_set(plugin_id, param_num)
+{
+    static id, lClassId, bool:lCurrent
+
+    id = get_param(1)
+    lClassId = get_param(2)
+    lCurrent = get_param(3)
+
+    if(!lCurrent)
+    {
+        gUserClassHumanNext[id] = lClassId
+        return true
+    }
+
+    if(lClassId == ZI_CLASS_NONE)
+    {
+        lClassId = gUserClassHumanNext[id]
+    }
+
+    return curePlayer(id, id, lClassId)
 }
 
 public native_core_client_infect(plugin_id, param_num)
 {
-    static id
-    id = get_param(1)
+    static victim, attacker
+    victim = get_param(1)
+    attacker = get_param(2)
 
-    return infectPlayer(id)
+    if(!attacker)
+        attacker = victim
+
+    return infectPlayer(victim, attacker)
 }
 
 public native_core_client_cure(plugin_id, param_num)
 {
-    static id
-    id = get_param(1)
+    static victim, attacker
+    victim = get_param(1)
+    attacker = get_param(2)
 
-    return curePlayer(id)
+    if(!attacker)
+        attacker = victim
+    
+    return curePlayer(victim, attacker)
 }
 
-infectPlayer(id, zombieClass, subClass)
+public native_core_client_heroisate(plugin_id, param_num)
 {
-    if(!is_user_alive(id))
+    static id, lClassId
+    id = get_param(1)
+    lClassId = get_param(2)
+
+    return heroisatePlayer(id, lClassId)
+}
+
+infectPlayer(victim, attacker, zombieClass, subClass)
+{
+    if(!is_user_alive(victim))
         return false
 
     gUserClassZombie[id] = zombieClass
@@ -376,11 +417,11 @@ infectPlayer(id, zombieClass, subClass)
     gUserClassHuman[id] = ZI_CLASS_NONE
     gUserClassHero[id] = ZI_CLASS_NONE
 
-    ExecuteForward(gForwardUserInfect, retValue, id, zombieClass, subClass)
+    ExecuteForward(gForwardUserInfect, retValue, victim, attacker, zombieClass, subClass)
     return true
 }
 
-curePlayer(id, humanClass)
+curePlayer(victim, attacker, humanClass)
 {
     if(!is_user_alive(id))
         return false
@@ -390,7 +431,7 @@ curePlayer(id, humanClass)
     gUserClassHuman[id] = humanClass
     gUserClassHero[id] = ZI_CLASS_NONE
 
-    ExecuteForward(gForwardUserCure, retValue, id, humanClass)
+    ExecuteForward(gForwardUserCure, retValue, victim, attacker, humanClass)
     return true
 }
 
