@@ -7,7 +7,7 @@
 
 #define PLUGIN "[MG][ZI] Core plugin"
 #define VERSIOn "1.0"
-#define AUTHOr "Vieni"
+#define AUTHOR "Vieni"
 
 #define flag_get(%1,%2) %1 & ((1 << (%2 & 31)))
 #define flag_set(%1,%2) %1 |= (1 << (%2 & 31))
@@ -45,6 +45,8 @@ new gForwardUserInfect, gForwardUserCure, gForwardUserHeroisate
 
 public plugin_init()
 {
+    register_plugin(PLUGIN, VERSION, AUTHOR)
+
     gForwardUserInfect = CreateMultiForward("zi_fw_client_infect", ET_CONTINUE, FP_CELL, FP_CELL, FP_CELL)
     gForwardUserCure = CreateMultiForward("zi_fw_client_cure", ET_CONTINUE, FP_CELL, FP_CELL)
     gForwardUserHeroisate = CreateMultiForward("zi_fw_client_heroisate", ET_CONTINUE, FP_CELL, FP_CELL)
