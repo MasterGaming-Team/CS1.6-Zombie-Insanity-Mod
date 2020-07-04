@@ -976,7 +976,13 @@ infectPlayer(victim, attacker, zombieClass, subClass)
     {
         cs_set_user_team(victim, CS_TEAM_T)
     }
-    
+
+    if(zombieClass == ZI_CLASS_NONE || subClass == ZI_CLASS_NONE)
+    {
+        zombieClass = ZI_ZMCLASS_NORMAL
+        subClass = ZI_ZMSUBCLASS_NORMAL1
+    }
+
     gUserClassZombie[victim] = zombieClass
     gUserClassZombieSub[victim] = subClass
     gUserClassHuman[victim] = ZI_CLASS_NONE
@@ -1016,6 +1022,9 @@ curePlayer(victim, attacker, humanClass)
         cs_set_user_team(victim, CS_TEAM_CT)
     }
     
+    if(humanClass == ZI_CLASS_NONE)
+        humanClass = ZI_HMCLASS_NORMAL
+
     gUserClassZombie[victim] = ZI_CLASS_NONE
     gUserClassZombieSub[victim] = ZI_CLASS_NONE
     gUserClassHuman[victim] = humanClass

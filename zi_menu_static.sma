@@ -2,7 +2,7 @@
 #include <amxmisc>
 #include <mg_core>
 
-#define PLUGIN "[MG][ZI] Main Menu"
+#define PLUGIN "[MG][ZI] Static Menus"
 #define VERSION "1.0"
 #define AUTHOR "Vieni"
 
@@ -12,12 +12,12 @@ public plugin_init()
 
     register_clcmd("chooseteam", "cmdChooseteam")
 
-    mg_core_command_reg("menu", "cmdMenuMain")
-    mg_core_command_reg("main", "cmdMenuMain")
-    mg_core_command_reg("fomenu", "cmdMenuMain")
-    mg_core_command_reg("mainmenu", "cmdMenuMain")
+    mg_core_command_reg("menu", "cmd_menu_open_main")
+    mg_core_command_reg("main", "cmd_menu_open_main")
+    mg_core_command_reg("fomenu", "cmd_menu_open_main")
+    mg_core_command_reg("mainmenu", "cmd_menu_open_main")
 
-    mg_core_chatmessage_freq_reg("MMAIN_CHAT_OPENMENU")
+    mg_core_chatmessage_freq_reg("MENU_MAIN_CHAT_OPENMENU")
 
 	register_menu("MMainMain Menu", KEYSMENU, "menu_main")
 	register_menu("MMainSpectator Menu", KEYSMENU, "menu_spectator")
@@ -27,12 +27,12 @@ public plugin_init()
 
 public plugin_natives()
 {
-    register_native("mg_zi_menu_main_open", "native_zi_menu_main_open")
+	register_native("zi_menu_open_main", "native_menu_open_main")
 }
 
-public cmdMenuMain(id)
+public cmd_menu_open_main(id)
 {
-
+	show_menu_main(id)
 }
 
 public clcmd_chooseteam(id)
@@ -96,11 +96,12 @@ show_menu_main(id)
 	return PLUGIN_HANDLED
 }
 
-public native_zi_menu_main_open(plugin_id, param_num)
+public native_menu_open_main(plugin_id, param_num)
 {
     static id
     id = get_param(1)
 
     show_menu_main(id)
+
     return true
 }
