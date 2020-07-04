@@ -2,12 +2,14 @@
 #include <amxmisc>
 #include <cs_maxspeed_api>
 #include <cs_player_models_api>
+#include <cs_weap_models_api>
 #include <cstrike>
 #include <engine>
 #include <hamsandwich>
 #include <mg_regsystem_api>
 #include <mg_round_manager>
 #include <reapi>
+#include <sqlx>
 #include <zi_core>
 
 #define PLUGIN "[MG][ZI] Core plugin"
@@ -54,6 +56,8 @@ new Array:arrayClassHeroId
 new Array:arrayClassHeroName
 new Array:arrayClassHeroTeam
 
+new Handle:gSqlClassTuple
+
 new bool:gAllowLaser, bool:gAllowShield, bool:gAllowInfect, bool:gAllowRespawn
 
 new gUserClassZombieNext[33], gUserClassZombieSubNext[33], gUserClassHumanNext[33]
@@ -94,6 +98,8 @@ public plugin_init()
 
 public plugin_natives()
 {
+    gSqlClassTuple = SQL_MakeDbTuple("127.0.0.1", "MG_User", "fKj4zbI0wxwPoFzU", "cs_zinsanity")
+
     arrayGamemodeId = ArrayCreate(1)
     arrayGamemodeName = ArrayCreate(64)
     arrayGamemodeType = ArrayCreate(1)
@@ -174,11 +180,80 @@ public start_gamemode()
     gGamemodeNext = ZI_GAMEMODE_NONE
 
     if(gAllowRespawn)
-        set_cvar_float("mp_forcerespawn", "4.0")
+        set_cvar_float("mp_forcerespawn", 4.0)
     else
-        set_cvar_num("mp_forcerespawn", "0")
+        set_cvar_num("mp_forcerespawn", 0)
 
     ExecuteForward(gForwardGamemodeStart, retValue, gGamemodeCurrent)
+}
+
+public sql_class_load_handle(FailState, Handle:Query, error[], errorcode, data[], datasize, Float:fQueueTime)
+{
+    new id = data[0]
+    new accountId = data[1]
+
+    if(FailState == TQUERY_CONNECT_FAILED || FailState == TQUERY_QUERY_FAILED)
+	{
+        log_amx("%s", error)
+        mg_reg_user_sqlload_finished(id, MG_SQLID_ZICLASSES)
+        return
+	}
+	
+    if(SQL_NumRows(Query) < 1)
+	{
+        new lSqlText[120], len
+		
+        formatex(lSqlText, charsmax(lSqlText), "INSERT INTO classes ")
+        len += formatex(lSqlText[len], charsmax(lSqlText) - len, "(accountId, ZClass, ZSubClass, HClass) ")
+        len += formatex(lSqlText[len], charsmax(lSqlText) - len, "VALUE ")
+        len += formatex(lSqlText[len], charsmax(lSqlText) - len, "(^"%d^", ^"%d^", ^"%d^", ^"%d^");",
+                    accountId, gUserClassZombieNext[id], gUserClassZombieSubNext[id], gUserClassHumanNext[id])
+        SQL_ThreadQuery(gSqlClassTuple, "sql_class_load_handle", lSqlText)
+
+        mg_reg_user_sqlload_finished(id, MG_SQLID_ZICLASSES)
+        return
+	}
+
+    new lClassZombieId, lClassZombieSubId, lClassHumanId
+
+    lClassZombieId = SQL_ReadResult(Query, SQL_FieldNameToNum(Query, "ZClass"))
+    lClassZombieSubId = SQL_ReadResult(Query, SQL_FieldNameToNum(Query, "ZSubClass"))
+    lClassHumanId = SQL_ReadResult(Query, SQL_FieldNameToNum(Query, "HClass"))
+
+    if(ArrayFindValue(arrayClassZombieId, lClassZombieId) == -1 || ArrayFindValue(arrayClassZombieSubId, lClassZombieSubId) == -1)
+    {
+        lClassZombieId = ZI_ZMCLASS_NORMAL
+        lClassZombieSubId = ZI_ZMSUBCLASS_NORMAL1
+    }
+
+    if(ArrayFindValue(arrayClassHumanId, lClassHumanId) == -1)
+    {
+        lClassHumanId = ZI_HMCLASS_NORMAL
+    }
+
+    gUserClassZombieNext[id] = lClassZombieId
+    gUserClassZombieSubNext[id] = lClassZombieSubId
+    gUserClassHumanNext[id] = lClassHumanId
+
+    mg_reg_user_sqlload_finished(id, MG_SQLID_ZICLASSES)
+}
+
+public sql_class_create_handle(FailState, Handle:Query, error[], errorcode, data[], datasize, Float:fQueueTime)
+{
+    if(FailState == TQUERY_CONNECT_FAILED || FailState == TQUERY_QUERY_FAILED)
+	{
+        log_amx("%s", error)
+        return
+	}
+}
+
+public sql_class_save_handle(FailState, Handle:Query, error[], errorcode, data[], datasize, Float:fQueueTime)
+{
+    if(FailState == TQUERY_CONNECT_FAILED || FailState == TQUERY_QUERY_FAILED)
+	{
+        log_amx("%s", error)
+        return
+	}
 }
 
 public native_core_arrayid_gamemode_get(plugin_id, param_num)
@@ -620,12 +695,32 @@ public native_core_client_heroisate(plugin_id, param_num)
     return heroisatePlayer(id, lClassId)
 }
 
+public mg_fw_client_login_process(id, accountId)
+{
+    new lSqlTxt[70], data[2]
+    data[0] = id
+    data[1] = accountId
+
+    mg_reg_user_sqlload_start(id, MG_SQLID_ZICLASSES)
+
+    formatex(lSqlTxt, charsmax(lSqlTxt), "SELECT * FROM classes WHERE accountId = ^"%d^";", accountId)
+    SQL_ThreadQuery(gSqlClassTuple, "sql_class_load_handle", lSqlTxt, data, sizeof(data))
+
+    return PLUGIN_HANDLED
+}
+
 public mg_fw_client_sql_save(id, accountId, saveType)
 {
-    //SQL mentés jöhet ide, most go apexxxx
-
-    if(saveType == MG_SAVETYPE_LOGOUT)
+    if(saveType == SQL_SAVETYPE_LOGOUT)
     {
+        new lSqlText[120], len
+
+        len += formatex(lSqlText[len], charsmax(lSqlText) - len, "UPDATE classes SET")
+        len += formatex(lSqlText[len], charsmax(lSqlText) - len, " ZClass = ^"%d^", ZSubClass = ^"%d^", HClass = ^"%d^"",
+                        gUserClassZombieNext[id], gUserClassZombieSubNext[id], gUserClassHumanNext[id])
+        len += formatex(lSqlText[len], charsmax(lSqlText) - len, " WHERE accountId=^"%d^";", accountId)
+        SQL_ThreadQuery(gSqlClassTuple, "sql_class_save_handle", lSqlText)
+
         mg_fw_client_clean(id)
     }
 }
@@ -654,7 +749,7 @@ public mg_fw_round_end_post()
     gGamemodeCurrent = ZI_GAMEMODE_NONE
     gGamemodeNext = ZI_GAMEMODE_NONE
 
-    set_cvar_float("mp_forcerespawn", "0.0001")
+    set_cvar_float("mp_forcerespawn", 0.0001)
 
     rg_balance_teams()
 
@@ -675,7 +770,7 @@ public fw_player_spawn_post(id)
     {
         ExecuteForward(gForwardUserSpawn, retValue, id)
 
-        if(retValue = ZI_TEAM_ZOMBIE)
+        if(CsTeams:retValue == ZI_TEAM_ZOMBIE)
             infectPlayer(id, id, gUserClassZombieNext[id], gUserClassZombieSubNext[id])
         else
             curePlayer(id, id, gUserClassHumanNext[id])
@@ -890,7 +985,8 @@ infectPlayer(victim, attacker, zombieClass, subClass)
     new lHelpString[64]
 
     ArrayGetString(arrayClassZombieSubClaw, lArrayId, lHelpString, charsmax(lHelpString))
-    entity_set_string(victim, EV_SZ_viewmodel, lHelpString)
+    cs_set_player_view_model(victim, CSW_KNIFE, lHelpString)
+    cs_set_player_weap_model(victim, CSW_KNIFE, "")
     ArrayGetString(arrayClassZombieSubModel, lArrayId, lHelpString, charsmax(lHelpString))
     cs_set_player_model(victim, lHelpString)
     entity_set_int(victim, EV_INT_body, ArrayGetCell(arrayClassZombieSubBody, lArrayId))
