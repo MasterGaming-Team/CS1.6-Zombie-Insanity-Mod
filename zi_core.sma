@@ -5,6 +5,7 @@
 #include <cstrike>
 #include <engine>
 #include <hamsandwich>
+#include <mg_regsystem_api>
 #include <mg_round_manager>
 #include <reapi>
 #include <zi_core>
@@ -167,8 +168,15 @@ public plugin_natives()
 
 public start_gamemode()
 {
+    remove_task(TASKGAMEMODESTART)
+
     gGamemodeCurrent = gGamemodeNext
     gGamemodeNext = ZI_GAMEMODE_NONE
+
+    if(gAllowRespawn)
+        set_cvar_float("mp_forcerespawn", "4.0")
+    else
+        set_cvar_num("mp_forcerespawn", "0")
 
     ExecuteForward(gForwardGamemodeStart, retValue, gGamemodeCurrent)
 }
@@ -612,6 +620,25 @@ public native_core_client_heroisate(plugin_id, param_num)
     return heroisatePlayer(id, lClassId)
 }
 
+public mg_fw_client_sql_save(id, saveType)
+{
+    if(saveType == MG_SAVETYPE_LOGOUT)
+    {
+        mg_fw_client_clean(id)
+    }
+}
+
+public mg_fw_client_clean(id)
+{
+    gUserClassZombieNext[id] = ZI_CLASS_NONE
+    gUserClassZombieSubNext[id] = ZI_CLASS_NONE
+    gUserClassHumanNext[id] = ZI_CLASS_NONE
+    gUserClassHero[id] = ZI_CLASS_NONE
+    gUserClassZombie[id] = ZI_CLASS_NONE
+    gUserClassZombieSub[id] = ZI_CLASS_NONE
+    gUserClassHuman[id] = ZI_CLASS_NONE
+}
+
 public mg_fw_round_start_post()
 {
     startGamemodeProcess()
@@ -619,9 +646,13 @@ public mg_fw_round_start_post()
 
 public mg_fw_round_end_post()
 {
+    remove_task(TASKGAMEMODESTART)
+
     new lGamemodeCurrent = gGamemodeCurrent
     gGamemodeCurrent = ZI_GAMEMODE_NONE
     gGamemodeNext = ZI_GAMEMODE_NONE
+
+    set_cvar_float("mp_forcerespawn", "0.0001")
 
     rg_balance_teams()
 
