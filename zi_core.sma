@@ -620,8 +620,10 @@ public native_core_client_heroisate(plugin_id, param_num)
     return heroisatePlayer(id, lClassId)
 }
 
-public mg_fw_client_sql_save(id, saveType)
+public mg_fw_client_sql_save(id, accountId, saveType)
 {
+    //SQL mentés jöhet ide, most go apexxxx
+
     if(saveType == MG_SAVETYPE_LOGOUT)
     {
         mg_fw_client_clean(id)
