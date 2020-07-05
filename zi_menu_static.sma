@@ -1,5 +1,6 @@
 #include <amxmodx>
 #include <amxmisc>
+#include <fakemeta>
 #include <mg_core>
 #include <zi_core>
 
@@ -26,40 +27,45 @@ public plugin_init()
 	mg_core_command_reg("fomenu", "cmd_menu_open_main")
 	mg_core_command_reg("mainmenu", "cmd_menu_open_main")
 
-    mg_core_chatmessage_freq_reg("MENU_MAIN_CHAT_OPENMENU")
+	mg_core_chatmessage_freq_reg("MENU_MAIN_CHAT_OPENMENU")
 
-	register_menu("SM Main Menu", KEYSMENU, "menu_main")
-	register_menu("SM Spectator Menu", KEYSMENU, "menu_spectator")
+	register_menu("MS Main Menu", KEYSMENU, "menu_main_handle")
+	register_menu("MS Weapons Menu", KEYSMENU, "menu_weapons_handle")
+	register_menu("MS Missions Menu", KEYSMENU, "menu_missions_handle")
+	register_menu("MS Spectator Menu", KEYSMENU, "menu_spectator_handle")
 
 	zi_core_arrayid_zombiesub_get(_, _, int:arrayClassZombieSubName)
 	zi_core_arrayid_human_get(_, int:arrayClassHumanName)
 
-    register_dictionary("zi_menumain.txt")
+	register_dictionary("zi_staticmenus.txt")
 }
 
 public plugin_natives()
 {
-	register_native("zi_menu_open_main", "native_menu_open_main")
+	register_native("zi_ms_menu_open_main", "native_menu_open_main")
+	register_native("zi_ms_menu_open_weapons", "native_menu_open_weapons")
 }
 
 public cmd_menu_open_main(id)
 {
-	show_menu_main(id)
+	menu_main_open(id)
+	return PLUGIN_HANDLED
 }
 
 public clcmd_chooseteam(id)
 {
-	if(flag_get(gTeamMenuOverride, id))
+	if(!(flag_get(gTeamMenuOverride, id)))
 	{
-		show_menu_main(id)
+		menu_main_open(id)
 		return PLUGIN_HANDLED;
 	}
 	
 	flag_set(gTeamMenuOverride, id)
+	remove_task(id)
 	return PLUGIN_CONTINUE;
 }
 
-show_menu_main(id)
+public menu_main_open(id)
 {
 	static menu[500], len
 	static lClassZombieSubName[64], lClassHumanName[40]
@@ -71,28 +77,315 @@ show_menu_main(id)
 	lClassHumanName[0] = EOS
 	
 	ArrayGetString(arrayClassZombieSubName, zi_core_class_zombiesub_arrayslot_get(zi_core_client_zombie_get(id, true)), lClassZombieSubName, charsmax(lClassZombieSubName))
-	ArrayGetString(arrayClassHumanName, zi_core_class_human_arrayslot_get(zi_core_client_human_get(id, true), lClassHumanName, charsmax(lClassHumanName))
-    
-	len = mg_core_menu_title_create(id, "MS MENU_TITLE_MAIN", menu, charsmax(menu), true)
+	ArrayGetString(arrayClassHumanName, zi_core_class_human_arrayslot_get(zi_core_client_human_get(id, true)), lClassHumanName, charsmax(lClassHumanName))
+	
+	len = mg_core_menu_title_create(id, "MS TITLE_MAIN", menu, charsmax(menu), true)
 	len += formatex(menu[len], charsmax(menu)-len, "^n")
-	len += formatex(menu[len], charsmax(menu)-len, "\r1. \wSZÖVEG1^n")
-	len += formatex(menu[len], charsmax(menu)-len, "\r2. \wSZÖVEG1^n")
+	len += formatex(menu[len], charsmax(menu)-len, "\r1. \w%L^n", id, "MS MENU_MAIN1") // Elsődleges fegyvernév lekérése
+	len += formatex(menu[len], charsmax(menu)-len, "\r2. \w%L^n", id, "MS MENU_MAIN2", id, lClassZombieSubName)
+	len += formatex(menu[len], charsmax(menu)-len, "\r3. \w%L^n", id, "MS MENU_MAIN3", id, lClassHumanName)
+	len += formatex(menu[len], charsmax(menu)-len, "\r4. \w%L^n", id, "MS MENU_MAIN4") // Ammo lekérése
 	len += formatex(menu[len], charsmax(menu)-len, "^n")
-	len += formatex(menu[len], charsmax(menu)-len, "^n0. \wKilépés")
+	len += formatex(menu[len], charsmax(menu)-len, "\r5. \w%L^n", id, "MS MENU_MAIN5") // *Áruház*
+	len += formatex(menu[len], charsmax(menu)-len, "\r6. \w%L^n", id, "MS MENU_MAIN6") // *Küldetések* [örökös küldetés/x][Heti küldi/x][Napi küldi/x]
+	len += formatex(menu[len], charsmax(menu)-len, "\r7. \w%L^n", id, "MS MENU_MAIN7") // *Klán menü* Klán név lekérése/Nincs Klán
+	len += formatex(menu[len], charsmax(menu)-len, "^n")
+	len += formatex(menu[len], charsmax(menu)-len, "\r8. \w%L^n", id, "MS MENU_MAIN8") // Beállítások
+	len += formatex(menu[len], charsmax(menu)-len, "\r9. \w%L^n", id, "MS MENU_MAIN9") // Reg menü
+	len += formatex(menu[len], charsmax(menu)-len, "^n")
+	len += formatex(menu[len], charsmax(menu)-len, "^n0. \w%L", id, "MS MENU_EXIT")
 
 	// Fix for AMXX custom menus
 	set_pdata_int(id, OFFSET_CSMENUCODE, 0)
-	show_menu(id, KEYSMENU, menu, -1, "Main Menu")
+	show_menu(id, KEYSMENU, menu, -1, "MS Main Menu")
 	
+	return PLUGIN_HANDLED
+}
+
+public menu_main_handle(id, key)
+{
+	switch(key)
+	{
+		case 0:
+		{
+			menu_weapons_open(id)
+		}
+		case 1:
+		{
+			// Zobmi kaszt menü megnyitása
+		}
+		case 2:
+		{
+			// Ember kaszt menü megnyitás
+		}
+		case 3:
+		{
+			// Extra cucc menü megnyitása
+		}
+		case 4:
+		{
+			// Áruház megnyitása
+		}
+		case 5:
+		{
+			menu_missions_open(id)
+		}
+		case 6:
+		{
+			// Klán menü megnyitása
+		}
+		case 7:
+		{
+			menu_settings_open(id)
+		}
+		case 8:
+		{
+			// Regmenü megnyitása
+		}
+	}
+
+	return PLUGIN_HANDLED
+}
+
+public menu_weapons_open(id)
+{
+	static menu[500], len
+
+	menu[0] = EOS
+	len = 0
+
+	len = mg_core_menu_title_create(id, "MS TITLE_WEAPONS", menu, charsmax(menu))
+	len += formatex(menu[len], charsmax(menu)-len, "^n")
+	len += formatex(menu[len], charsmax(menu)-len, "\r1. \w%L^n", id, "MS MENU_WEAPONS1") // Elsődleges fegyver lekérése
+	len += formatex(menu[len], charsmax(menu)-len, "\r2. \w%L^n", id, "MS MENU_WEAPONS2") // Másodlagos fegyver lekérése
+	len += formatex(menu[len], charsmax(menu)-len, "\r3. \w%L^n", id, "MS MENU_WEAPONS3") // Kés lekérése
+	len += formatex(menu[len], charsmax(menu)-len, "^n")
+	len += formatex(menu[len], charsmax(menu)-len, "\r4. \w%L^n", id, "MS MENU_WEAPONS4") // Támadó gránát lekérése
+	len += formatex(menu[len], charsmax(menu)-len, "\r5. \w%L^n", id, "MS MENU_WEAPONS5") // Támogató gránát lekérése
+	len += formatex(menu[len], charsmax(menu)-len, "^n")
+	len += formatex(menu[len], charsmax(menu)-len, "\r0. \w%L", id, "MS MENU_EXIT")
+
+	// Fix for AMXX custom menus
+	set_pdata_int(id, OFFSET_CSMENUCODE, 0)
+	show_menu(id, KEYSMENU, menu, -1, "MS Weapons Menu")
+	
+	return PLUGIN_HANDLED
+}
+
+public menu_weapons_handle(id, key)
+{
+	switch(key)
+	{
+		case 0:
+		{
+			// Elsődleges fegyvermenü megnyitása
+		}
+		case 1:
+		{
+			// Másodlagos fegyvermenü megnyitása
+		}
+		case 2:
+		{
+			// Kés menü megnyitása
+		}
+		case 3:
+		{
+			// Támadó gránát menü megnyitása
+		}
+		case 4:
+		{
+			// Támogató gránát menü megnyitása
+		}
+	}
+
+	return PLUGIN_HANDLED
+}
+
+public menu_missions_open(id)
+{
+	// Lekérni, hogy bevan-e lépve. Ha nem, ne nyissa meg a menüt.
+
+	static menu[500], len
+
+	menu[0] = EOS
+	len = 0
+
+	len = mg_core_menu_title_create(id, "MS TITLE_MISSIONS", menu, charsmax(menu))
+	len += formatex(menu[len], charsmax(menu)-len, "^n")
+	len += formatex(menu[len], charsmax(menu)-len, "\r1. \w%L^n", id, "MS MENU_MISSIONS1") // Napi küldetések lekérése
+	len += formatex(menu[len], charsmax(menu)-len, "\r2. \w%L^n", id, "MS MENU_MISSIONS2") // Heti küldetések lekérése
+	len += formatex(menu[len], charsmax(menu)-len, "^n")
+	len += formatex(menu[len], charsmax(menu)-len, "\r3. \w%L^n", id, "MS MENU_MISSIONS3") // Örök küldetések lekérése
+	len += formatex(menu[len], charsmax(menu)-len, "^n")
+	len += formatex(menu[len], charsmax(menu)-len, "\r0. \w%L", id, "MS MENU_EXIT")
+
+	// Fix for AMXX custom menus
+	set_pdata_int(id, OFFSET_CSMENUCODE, 0)
+	show_menu(id, KEYSMENU, menu, -1, "MS Missions Menu")
+	
+	return PLUGIN_HANDLED
+}
+
+public menu_missions_handle(id, key)
+{
+	switch(key)
+	{
+		case 0:
+		{
+			// Megnyitni a napi küldetések menüt
+		}
+		case 1:
+		{
+			// Megnyitni a heti küldetések menüt
+		}
+		case 2:
+		{
+			// Megnyitni az örök küldetések menüt
+		}
+	}
+
+	return PLUGIN_HANDLED
+}
+
+public menu_settings_open(id)
+{
+	static menu[500], len, CsTeams:lUserTeam
+
+	menu[0] = EOS
+	len = 0
+	lUserTeam = cs_get_user_team(id)
+
+	len = mg_core_menu_title_create(id, "MS TITLE_SETTINGS", menu, charsmax(menu))
+	len += formatex(menu[len], charsmax(menu)-len, "^n")
+	len += formatex(menu[len], charsmax(menu)-len, "\r1. \w%L^n", id, "MS MENU_SETTINGS1") // Effektek [FPS]
+	len += formatex(menu[len], charsmax(menu)-len, "\r2. \w%L^n", id, "MS MENU_SETTINGS2") // Személyre Szabás
+	len += formatex(menu[len], charsmax(menu)-len, "\r3. \w%L^n", id, "MS MENU_SETTINGS3") // Tiltások [némítás pl.]
+	len += formatex(menu[len], charsmax(menu)-len, "^n")
+	len += formatex(menu[len], charsmax(menu)-len, "\r4. \w%L^n", id, "MS MENU_SETTINGS4") // Prefix[Jelenlegi prefix lekérése]
+	// Megnézni, hogy a játékos admin-e
+	len += formatex(menu[len], charsmax(menu)-len, "\r5. \w%L^n", id, "MS MENU_SETTINGS5") // Admin menü
+
+	if(lUserTeam == CS_TEAM_SPECTATOR)
+		len += formatex(menu[len], charsmax(menu)-len, "\r6. \w%L^n", id, "MS MENU_SETTINGS6SPECTATOR") // Nezőbe állás
+	else if(lUserTeam == CS_TEAM_T || lUserTeam == CS_TEAM_CT)
+		len += formatex(menu[len], charsmax(menu)-len, "\r6. \w%L^n", id, "MS MENU_SETTINGS6PLAYING") // Játékba állás
+	
+	len += formatex(menu[len], charsmax(menu)-len, "^n")
+	len += formatex(menu[len], charsmax(menu)-len, "\r0. \w%L", id, "MS MENU_EXIT")
+
+	// Fix for AMXX custom menus
+	set_pdata_int(id, OFFSET_CSMENUCODE, 0)
+	show_menu(id, KEYSMENU, menu, -1, "MS Settings Menu")
+	
+	return PLUGIN_HANDLED
+}
+
+public menu_settings_handle(id, key)
+{
+	switch(key)
+	{
+		case 0:
+		{
+			// Megnyitni az effektek menüt
+		}
+		case 1:
+		{
+			// Megnyitni a személyre szabás menüt
+		}
+		case 2:
+		{
+			// Megnyitni a tiltások menüt
+		}
+		case 3:
+		{
+			// Megnyitni a prefix menüt
+		}
+		case 4:
+		{
+			// Megnyitni az admin menüt
+		}
+		case 5:
+		{
+			new CsTeams:lUserTeam = cs_get_user_team(id)
+
+			if(lUserTeam == CS_TEAM_SPECTATOR)
+			{
+				flag_set(gTeamMenuOverride, id)
+				set_task(1.0, "delete_menu_override", id)
+			}
+			else if(lUserTeam == CS_TEAM_CT || lUserTeam == CS_TEAM_T)
+				menu_spectator_open(id)
+		}
+	}
+
+	return PLUGIN_HANDLED
+}
+
+public delete_menu_override(id)
+{
+	flag_unset(gTeamMenuOverride, id)
+}
+
+public menu_spectator_open(id)
+{
+	new CsTeams:lUserTeam = cs_get_user_team(id)
+
+	if(!(lUserTeam == CS_TEAM_CT || lUserTeam == CS_TEAM_T))
+		return PLUGIN_HANDLED
+	
+	static menu[500], len
+
+	menu[0] = EOS
+	len = 0
+
+	len = mg_core_menu_title_create(id, "MS TITLE_SPECTATOR", menu, charsmax(menu))
+	len += formatex(menu[len], charsmax(menu)-len, "^n")
+	len += formatex(menu[len], charsmax(menu)-len, "\r1. \w%L^n", id, "MS MENU_SPECTATOR1")
+	len += formatex(menu[len], charsmax(menu)-len, "\r2. \w%L^n", id, "MS MENU_SPECTATOR2")
+	len += formatex(menu[len], charsmax(menu)-len, "^n")
+	len += formatex(menu[len], charsmax(menu)-len, "\r0. \w%L", id, "MS MENU_EXIT")
+
+	// Fix for AMXX custom menus
+	set_pdata_int(id, OFFSET_CSMENUCODE, 0)
+	show_menu(id, KEYSMENU, menu, -1, "MS Spectator Menu")
+	
+	return PLUGIN_HANDLED
+}
+
+public menu_spectator_handle(id, key)
+{
+	switch(key)
+	{
+		case 0:
+		{
+			user_silentkill(id)
+			cs_set_user_team(id, CS_TEAM_SPECTATOR)
+		}
+		case 1:
+		{
+			menu_settings_open(id)
+		}
+	}
+
 	return PLUGIN_HANDLED
 }
 
 public native_menu_open_main(plugin_id, param_num)
 {
-    static id
-    id = get_param(1)
+	static id
+	id = get_param(1)
 
-    show_menu_main(id)
+	menu_main_open(id)
 
-    return true
+	return true
+}
+
+public native_menu_open_weapons(plugin_id, param_num)
+{
+	static id
+	id = get_param(1)
+
+	menu_weapons_open(id)
+
+	return true
 }
