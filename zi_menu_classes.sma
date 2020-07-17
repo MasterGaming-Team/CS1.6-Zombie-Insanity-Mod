@@ -168,6 +168,115 @@ public menu_open_subzclasses(id, classId)
 
 }
 
+show_submenu_zombieclasses(id, classId, mPage = 1)
+{
+	if(!is_user_connected(id) || is_user_bot(id))
+		return false
+		
+	new menu[500]
+	new len
+	new pickId = 1
+	
+	new lClassZombieName[33], lClassZombieSubName[33], lClassZombieSubDesc[33]
+	new lClassZombieSubHealth, Float:lClassZombieSubSpeed, Float:lClassZombieSubGravity
+	new lClassZombieSubHealthStr[12]
+	new lClassZombieSubCounter
+	
+	new lClassZombieSubCount = ArraySize(arrayClassZombieSubId)
+	
+	new tempClassId, bool:tempSubClassActivated
+	
+	ArrayGetString(arrayZombieClassName, classId, className, charsmax(className))
+
+	for(new i; i < lZombieSubClassCount; i++)
+	{
+		if(classId == ArrayGetCell(gZombieSubClassGlobalId, i))
+		{
+			lClassZombieSubHealth = ArrayGetCell(arrayClassZombieSubHealth, i)
+			lClassZombieSubHealthStr = mg_core_integer_to_formal(lClassZombieSubHealth)
+			lClassZombieSubSpeed = Float:ArrayGetCell(arrayClassZombieSubSpeed, i)
+			lClassZombieSubGravity = Float:ArrayGetCell(arrayClassZombieSubGravity, i)
+			break
+		}
+	}
+	
+	len += formatex(menu[len], charsmax(menu) - len, "%s^n", createTitle(id, "TITLE_SUBZOMBIECLASSES"))
+	len += formatex(menu[len], charsmax(menu) - len, "^n")
+	len += formatex(menu[len], charsmax(menu) - len, "  %L^n", id, "MENU_SUBZOMBIECLASSES1", id, className)
+	len += formatex(menu[len], charsmax(menu) - len, "  %L^n", id, "MENU_SUBZOMBIECLASSES2", classHealthStr)
+	len += formatex(menu[len], charsmax(menu) - len, "  %L^n", id, "MENU_SUBZOMBIECLASSES3", classSpeed, classGravity)
+	len += formatex(menu[len], charsmax(menu) - len, "  %L^n", id, "MENU_SUBZOMBIECLASSES4", classKnockback)
+	len += formatex(menu[len], charsmax(menu) - len, "^n")
+	for(new i;i < lZombieSubClassCount; i++)
+	{
+		tempClassId = ArrayGetCell(gZombieSubClassGlobalId, i)
+		
+		if(tempClassId != classId)
+			continue
+		
+		if(subClassCounter < mPage*4-4)
+		{
+			subClassCounter++
+			continue
+		}
+		if(subClassCounter > mPage*4-1)
+			break
+		
+		subClassCrit = ArrayGetCell(gZombieSubClassCrit, i)
+		
+		if(subClassCrit)
+		{
+			new retValue
+			ExecuteForward(gForwardSubClassCritCheck, retValue, id, i)
+			
+			if(retValue == 0)
+			{
+				log_amx("[ZP] Didn't get sub zombie criterium from forward (%d)", i)
+				continue
+			}
+			if(retValue == PLUGIN_HANDLED)	tempSubClassActivated = true
+			else				tempSubClassActivated = false
+		}
+		else 	tempSubClassActivated = true
+		
+		ArrayGetString(gZombieSubClassName, i, subClassName, charsmax(subClassName))
+		ArrayGetString(gZombieSubClassDesc, i, subClassDesc, charsmax(subClassDesc))
+		
+		if(!subClassCrit)
+			len += formatex(menu[len], charsmax(menu) - len, "\r%d. %s%L  \r%L^n", pickId, gZombieSubClassNext[id] == i ? "\y":"\w", id, subClassName, id, subClassDesc)
+		else
+		{
+			new subClassCritDesc[33]
+			ArrayGetString(gZombieSubClassCritDesc, i, subClassCritDesc, charsmax(subClassCritDesc))
+			
+			if(tempSubClassActivated)
+				len += formatex(menu[len], charsmax(menu) - len, "\r%d. %s%L \r%L  %L^n", pickId, gZombieSubClassNext[id] == i ? "\y":"\w", id, subClassName, id, subClassCritDesc, id, subClassDesc)
+			else
+				len += formatex(menu[len], charsmax(menu) - len, "\d%d. %L \r%L  %L^n", pickId, id, subClassName, id, subClassCritDesc, id, subClassDesc)
+		}
+		
+		gSubClassesChosen[pickId-1][id] = i
+		
+		pickId++
+	}
+	for(new i=1; i<4; i++)	
+		if(!gSubClassesChosen[i][id])
+			gSubClassesChosen[i][id] = -1
+	
+	len += formatex(menu[len], charsmax(menu) - len, "^n")
+	//len += formatex(menu[len], charsmax(menu) - len, "  %s8.%s %L^n", mPage == 1 ? "\d":"\r", mPage == 1 ? "\d":"\w", id, "MENU_BACK")
+	//len += formatex(menu[len], charsmax(menu) - len, "  %s9.%s %L^n", mPage*4 >= lZombieSubClassCount ? "\d":"\r", mPage*4 >= lZombieSubClassCount ? "\d":"\w", id, "MENU_NEXT")
+	len += formatex(menu[len], charsmax(menu) - len, "\r0.\w %L", id, "MENU_EXIT")
+	
+	gPage[id] = mPage
+	
+	// Fix for AMXX custom menus
+	set_pdata_int(id, OFFSET_CSMENUCODE, 0)
+	show_menu(id, KEYSMENU, menu, -1, "ZombieClasses SubMenu")
+	
+	return PLUGIN_HANDLED
+}
+
 public menu_open_hclasses(id, mPage = 1)
 {
     if(!is_user_connected(id))
