@@ -72,6 +72,7 @@ new gMaxPlayers
 new gForwardUserLast, gForwardUserSpawn
 new gForwardUserInfect, gForwardUserCure, gForwardUserHeroisate
 new gForwardGamemodeChosen, gForwardCountdownStart, gForwardGamemodeStart, gForwardGamemodeEnd
+new gForwardClassZombieSubCritCheck
 
 public plugin_init()
 {
@@ -94,6 +95,8 @@ public plugin_init()
     gForwardCountdownStart = CreateMultiForward("zi_fw_countdown_start", ET_CONTINUE, FP_CELL)
     gForwardGamemodeStart = CreateMultiForward("zi_fw_gamemode_start", ET_CONTINUE, FP_CELL)
     gForwardGamemodeEnd = CreateMultiForward("zi_fw_gamemode_end", ET_CONTINUE, FP_CELL)
+
+    gForwardClassZombieSubCritCheck = CreateMultiForward("zi_fw_class_zombiesub_critcheck", ET_STOP, FP_CELL, FP_CELL)
 }
 
 public plugin_natives()
@@ -158,6 +161,8 @@ public plugin_natives()
     register_native("zi_core_class_hero_arrayslot_get", "native_core_class_hero_arrayslot_get")
 
     register_native("zi_core_client_last", "native_core_client_last")
+
+    register_native("zi_core_client_zombiesub_available", "native_core_client_zombiesub_available")
 
     register_native("zi_core_client_zombie_get", "native_core_client_zombie_get")
     register_native("zi_core_client_zombiesub_get", "native_core_client_zombiesub_get")
@@ -578,6 +583,20 @@ public native_core_client_last(plugin_id, param_num)
     new lTeam = get_param(2)
 
     return isLastPlayer(id, CsTeams:lTeam)
+}
+
+public native_core_client_zombiesub_available(plugin_id, param_num)
+{
+    static id, lClassId
+    id = get_param(1)
+    lClassId = get_param(2)
+
+    ExecuteForward(gForwardClassZombieSubCritCheck, retValue, id, lClassId)
+
+    if(retValue == PLUGIN_HANDLED)
+        return true
+    
+    return false
 }
 
 public native_core_client_zombie_get(plugin_id, param_num)
