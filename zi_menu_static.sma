@@ -42,8 +42,8 @@ public plugin_init()
 
 public plugin_natives()
 {
-	register_native("zi_ms_menu_open_main", "native_menu_open_main")
-	register_native("zi_ms_menu_open_weapons", "native_menu_open_weapons")
+	register_native("zi_menu_open_main", "native_menu_open_main")
+	register_native("zi_menu_open_weapons", "native_menu_open_weapons")
 }
 
 public cmd_menu_open_main(id)

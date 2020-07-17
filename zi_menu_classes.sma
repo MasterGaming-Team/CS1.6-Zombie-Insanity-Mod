@@ -1,8 +1,9 @@
 #include <amxmodx>
-#include <amxconst>
+#include <amxmisc>
 #include <fakemeta>
 #include <mg_core>
 #include <zi_core>
+#include <zi_menu_static>
 
 #define PLUGIN "[MG][ZI] Class Menus"
 #define VERSION "1.0"
@@ -31,8 +32,11 @@ new gMaxPlayers
 public plugin_init()
 {
     mg_core_command_reg("zclasses", "cmd_menu_open_zclasses")
+    mg_core_command_reg("zclass", "cmd_menu_open_zclasses")
     mg_core_command_reg("hclasses", "cmd_menu_open_hclasses")
+    mg_core_command_reg("hclass", "cmd_menu_open_hclasses")
     mg_core_command_reg("classes", "cmd_menu_open_classes")
+    mg_core_command_reg("class", "cmd_menu_open_classes")
 
     gMaxPlayers = get_maxplayers()
 
@@ -40,6 +44,10 @@ public plugin_init()
     zi_core_arrayid_zombiesub_get(int:arrayClassZombieSubParent, int:arrayClassZombieSubId, int:arrayClassZombieSubName, int:arrayClassZombieSubDesc,
                     _, _, int:arrayClassZombieSubHealth, int:arrayClassZombieSubSpeed, int:arrayClassZombieSubGravity)
     zi_core_arrayid_human_get(int:arrayClassHumanId, int:arrayClassHumanName, int:arrayClassHumanDesc)
+
+    register_menu("MC ZombieClasses Menu", KEYSMENU, "menu_zclasses_handle")
+
+    register_dictionary("zi_classmenus.txt")
 }
 
 public plugin_natives()
@@ -74,13 +82,13 @@ public cmd_menu_open_classes(id)
 menu_open_zclasses(id, mPage = 1)
 {
     if(!is_user_connected(id))
-        return
+        return false
     
-    static menu[500], len, lZombieClassCount
+    new menu[500], len, lZombieClassCount
 
     menu[0] = EOS
     len = 0
-    lZombieClassCount = ArraySize(arrayClassZombieSubId)
+    lZombieClassCount = ArraySize(arrayClassZombieId)
 
     while(lZombieClassCount < mPage*7-7)
     {
@@ -88,12 +96,12 @@ menu_open_zclasses(id, mPage = 1)
 				
 		if(mPage < 1)
 		{
-			zp_menu_main_show(id)
+			zi_menu_open_main(id)
 			return false
 		}
 	}
 
-    static i, pickId, lClassName[64], lClassDesc[64], lPlayersNextClass
+    new i, pickId, lClassName[64], lClassDesc[64], lPlayersNextClass
 
     pickId = 1
     lPlayersNextClass = zi_core_client_zombie_get(id, true)
@@ -101,8 +109,8 @@ menu_open_zclasses(id, mPage = 1)
     len = mg_core_menu_title_create(id, "MC TITLE_ZCLASSES", menu, charsmax(menu))
     len += formatex(menu, charsmax(menu), "^n")
 
-	for(i = mPage*7-7;(i < lZombieClassCount && i <= mPage*7-1); i++)
-	{
+    for(i = mPage*7-7;(i < lZombieClassCount && i <= mPage*7-1); i++)
+    {
 		ArrayGetString(arrayClassZombieName, i, lClassName, charsmax(lClassName))
 		ArrayGetString(arrayClassZombieDesc, i, lClassDesc, charsmax(lClassDesc))
 		
@@ -110,18 +118,54 @@ menu_open_zclasses(id, mPage = 1)
                             id, lClassName, get_players_with_this_zclass(i), id, lClassDesc)
 		
 		pickId++
-	}
+    }
 
     len += formatex(menu, charsmax(menu), "^n")
-	len += formatex(menu[len], charsmax(menu) - len, "%s8.%s %L^n", mPage == 1 ? "\d":"\r", mPage == 1 ? "\d":"\w", id, "MC MENU_BACK")
-	len += formatex(menu[len], charsmax(menu) - len, "%s9.%s %L^n", mPage*7 >= lZombieClassCount ? "\d":"\r", mPage*7 >= lZombieClassCount ? "\d":"\w", id, "MC MENU_NEXT")
-	len += formatex(menu[len], charsmax(menu) - len, "\r0.\w %L", id, "MC MENU_BACKTOMAIN")
+    len += formatex(menu[len], charsmax(menu) - len, "%s8.%s %L^n", mPage == 1 ? "\d":"\r", mPage == 1 ? "\d":"\w", id, "MC MENU_BACK")
+    len += formatex(menu[len], charsmax(menu) - len, "%s9.%s %L^n", mPage*7 >= lZombieClassCount ? "\d":"\r", mPage*7 >= lZombieClassCount ? "\d":"\w", id, "MC MENU_NEXT")
+    len += formatex(menu[len], charsmax(menu) - len, "\r0.\w %L", id, "MC MENU_BACKTOMAIN")
 
     gPage[id] = mPage
 
 	// Fix for AMXX custom menus
-	set_pdata_int(id, OFFSET_CSMENUCODE, 0)
-	show_menu(id, KEYSMENU, menu, -1, "MC ZombieClasses Menu")
+    set_pdata_int(id, OFFSET_CSMENUCODE, 0)
+    show_menu(id, KEYSMENU, menu, -1, "MC ZombieClasses Menu")
+    return true
+}
+
+public menu_zclasses_handle(id, key)
+{
+    new lClassId = (gPage[id]-1)*7+key
+    new lZombieClassCount = ArraySize(arrayClassZombieId)
+
+    if(lClassId < lZombieClassCount && key < 7)
+    {
+    	menu_open_subzclasses(id, lClassId)
+    	return PLUGIN_HANDLED
+    }
+    if(key == 7)
+    {
+    	if(gPage[id] != 1) gPage[id]--
+    
+    	menu_open_zclasses(id, gPage[id])
+    	return PLUGIN_HANDLED
+    }
+    if(key == 8)
+    {
+    	if(gPage[id]*7 < lZombieClassCount) gPage[id]++
+
+    	menu_open_zclasses(id, gPage[id])
+    	return PLUGIN_HANDLED
+    }
+    if(key == 9)
+		zi_menu_open_main(id)
+	
+    return PLUGIN_HANDLED
+}
+
+public menu_open_subzclasses(id, classId)
+{
+
 }
 
 public menu_open_hclasses(id, mPage = 1)
