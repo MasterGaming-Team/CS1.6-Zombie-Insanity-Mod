@@ -652,6 +652,10 @@ public native_core_client_zombie_set(plugin_id, param_num)
 
     if(!lCurrent)
     {
+        if(lClassId == ZI_CLASS_NONE && lClassSubId != ZI_CLASS_NONE)
+        {
+            lClassId = ArrayGetCell(arrayClassZombieSubParent, ArrayFindValue(arrayClassZombieSubId, lClassId))
+        }
         gUserClassZombieNext[id] = lClassId
         gUserClassZombieSubNext[id] = lClassSubId
         return true
@@ -659,8 +663,16 @@ public native_core_client_zombie_set(plugin_id, param_num)
 
     if(lClassId == ZI_CLASS_NONE)
     {
-        lClassId = gUserClassZombieNext[id]
-        lClassSubId = gUserClassZombieSubNext[id]
+        if(lClassSubId != ZI_CLASS_NONE)
+        {
+            lClassId = ArrayGetCell(arrayClassZombieSubParent, ArrayFindValue(arrayClassZombieSubId, lClassId))
+            lClassSubId = lClassSubId
+        }
+        else
+        {
+            lClassId = gUserClassZombieNext[id]
+            lClassSubId = gUserClassZombieSubNext[id]
+        }
     }
 
     return infectPlayer(id, id, lClassId, lClassSubId)
