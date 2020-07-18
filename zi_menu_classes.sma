@@ -187,7 +187,7 @@ menu_open_subzclasses(id, classId, mPage = 1)
 	}
 	else
 	{
-		new lArrayId = zi_core_class_zombiesub_arrayslot_get((ArrayGetCell(arrayClassZombieDefSubClass, zi_core_class_zombie_arrayslot_get(classId))))
+		new lArrayId = zi_core_class_zombiesub_arrayslot_get(ArrayGetCell(arrayClassZombieDefSubClass, zi_core_class_zombie_arrayslot_get(classId)))
 
 		lCurrentClassHealth = ArrayGetCell(arrayClassZombieSubHealth, lArrayId)
 		lCurrentClassSpeed = ArrayGetCell(arrayClassZombieSubSpeed, lArrayId)
