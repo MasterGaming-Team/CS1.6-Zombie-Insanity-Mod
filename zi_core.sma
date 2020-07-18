@@ -291,15 +291,18 @@ public native_core_arrayid_zombie_get(plugin_id, param_num)
 {
     if(get_param(1) != -1)
         set_param_byref(1, int:arrayClassZombieId)
-    
+
     if(get_param(2) != -1)
-        set_param_byref(2, int:arrayClassZombieName)
+        set_param_byref(2, int:arrayClassZombieDefSubClass)
     
     if(get_param(3) != -1)
-        set_param_byref(3, int:arrayClassZombieDesc)
+        set_param_byref(3, int:arrayClassZombieName)
     
     if(get_param(4) != -1)
-        set_param_byref(4, int:arrayClassZombieModel)
+        set_param_byref(4, int:arrayClassZombieDesc)
+    
+    if(get_param(5) != -1)
+        set_param_byref(5, int:arrayClassZombieModel)
 }
 
 public native_core_arrayid_zombiesub_get(plugin_id, param_num)
