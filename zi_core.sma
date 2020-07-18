@@ -31,6 +31,7 @@ new Array:arrayGamemodeAllowInfect
 new Array:arrayGamemodeAllowRespawn
 
 new Array:arrayClassZombieId
+new Array:arrayClassZombieDefSubClass
 new Array:arrayClassZombieName
 new Array:arrayClassZombieDesc
 new Array:arrayClassZombieModel
@@ -112,6 +113,7 @@ public plugin_natives()
     arrayGamemodeAllowRespawn = ArrayCreate(1)
 
     arrayClassZombieId = ArrayCreate(1)
+    arrayClassZombieDefSubClass = ArrayCreate(1)
     arrayClassZombieName = ArrayCreate(64)
     arrayClassZombieDesc = ArrayCreate(64)
     arrayClassZombieModel = ArrayCreate(64)
@@ -424,13 +426,15 @@ public native_core_class_zombie_reg(plugin_id, param_num)
         return ZI_CLASS_NONE
     }
 
-    new lClassName[64], lClassDesc[64], lClassModel[64]
+    new lClassDefSubClass, lClassName[64], lClassDesc[64], lClassModel[64]
 
-    get_string(2, lClassName, charsmax(lClassName))
-    get_string(3, lClassDesc, charsmax(lClassDesc))
-    get_string(4, lClassModel, charsmax(lClassModel))
+    lClassDefSubClass = get_param(2)
+    get_string(3, lClassName, charsmax(lClassName))
+    get_string(4, lClassDesc, charsmax(lClassDesc))
+    get_string(5, lClassModel, charsmax(lClassModel))
 
     ArrayPushCell(arrayClassZombieId, lClassId)
+    ArrayPushCell(arrayClassZombieDefSubClass, lClassDefSubClass)
     ArrayPushString(arrayClassZombieName, lClassName)
     ArrayPushString(arrayClassZombieDesc, lClassDesc)
     ArrayPushString(arrayClassZombieModel, lClassModel)
