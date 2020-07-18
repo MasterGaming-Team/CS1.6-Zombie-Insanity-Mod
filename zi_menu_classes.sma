@@ -9,7 +9,10 @@
 #define VERSION "1.0"
 #define AUTHOR "Vieni"
 
+#define SUBZCLASS_IPP 5 // ITEM PER PAGE
+
 new Array:arrayClassZombieId
+new Array:arrayClassZombieDefSubClass
 new Array:arrayClassZombieName
 new Array:arrayClassZombieDesc
 
@@ -25,7 +28,8 @@ new Array:arrayClassHumanId
 new Array:arrayClassHumanName
 new Array:arrayClassHumanDesc
 
-new gPage[33]
+new gMenuSubClassState[33], gMenuSubClassCount[33], gMenuSubClassPicks[33][SUBZCLASS_IPP]
+new gMenuZClassPage[33], gMenuSubClassPage[33]
 
 new gMaxPlayers
 
@@ -40,7 +44,7 @@ public plugin_init()
 
     gMaxPlayers = get_maxplayers()
 
-    zi_core_arrayid_zombie_get(int:arrayClassZombieId, int:arrayClassZombieName, int:arrayClassZombieDesc)
+    zi_core_arrayid_zombie_get(int:arrayClassZombieId, int:arrayClassZombieDefSubClass, int:arrayClassZombieName, int:arrayClassZombieDesc)
     zi_core_arrayid_zombiesub_get(int:arrayClassZombieSubParent, int:arrayClassZombieSubId, int:arrayClassZombieSubName, int:arrayClassZombieSubDesc,
                     _, _, int:arrayClassZombieSubHealth, int:arrayClassZombieSubSpeed, int:arrayClassZombieSubGravity)
     zi_core_arrayid_human_get(int:arrayClassHumanId, int:arrayClassHumanName, int:arrayClassHumanDesc)
@@ -125,7 +129,7 @@ menu_open_zclasses(id, mPage = 1)
     len += formatex(menu[len], charsmax(menu) - len, "%s9.%s %L^n", mPage*7 >= lZombieClassCount ? "\d":"\r", mPage*7 >= lZombieClassCount ? "\d":"\w", id, "MC MENU_NEXT")
     len += formatex(menu[len], charsmax(menu) - len, "\r0.\w %L", id, "MC MENU_BACKTOMAIN")
 
-    gPage[id] = mPage
+    gMenuZClassPage[id] = mPage
 
 	// Fix for AMXX custom menus
     set_pdata_int(id, OFFSET_CSMENUCODE, 0)
@@ -135,7 +139,7 @@ menu_open_zclasses(id, mPage = 1)
 
 public menu_zclasses_handle(id, key)
 {
-    new lClassId = (gPage[id]-1)*7+key
+    new lClassId = (gMenuZClassPage[id]-1)*7+key
     new lZombieClassCount = ArraySize(arrayClassZombieId)
 
     if(lClassId < lZombieClassCount && key < 7)
@@ -145,16 +149,16 @@ public menu_zclasses_handle(id, key)
     }
     if(key == 7)
     {
-    	if(gPage[id] != 1) gPage[id]--
+    	if(gMenuZClassPage[id] != 1) gMenuZClassPage[id]--
     
-    	menu_open_zclasses(id, gPage[id])
+    	menu_open_zclasses(id, gMenuZClassPage[id])
     	return PLUGIN_HANDLED
     }
     if(key == 8)
     {
-    	if(gPage[id]*7 < lZombieClassCount) gPage[id]++
+    	if(gMenuZClassPage[id]*7 < lZombieClassCount) gMenuZClassPage[id]++
 
-    	menu_open_zclasses(id, gPage[id])
+    	menu_open_zclasses(id, gMenuZClassPage[id])
     	return PLUGIN_HANDLED
     }
     if(key == 9)
@@ -163,117 +167,167 @@ public menu_zclasses_handle(id, key)
     return PLUGIN_HANDLED
 }
 
-public menu_open_subzclasses(id, classId)
+menu_open_subzclasses(id, classId, mPage = 1)
 {
-
-}
-
-show_submenu_zombieclasses(id, classId, mPage = 1)
-{
-	if(!is_user_connected(id) || is_user_bot(id))
+	if(!is_user_connected(id))
 		return false
-		
-	new menu[500]
-	new len
-	new pickId = 1
-	
-	new lClassZombieName[33], lClassZombieSubName[33], lClassZombieSubDesc[33]
-	new lClassZombieSubHealth, Float:lClassZombieSubSpeed, Float:lClassZombieSubGravity
-	new lClassZombieSubHealthStr[12]
-	new lClassZombieSubCounter
-	
-	new lClassZombieSubCount = ArraySize(arrayClassZombieSubId)
-	
-	new tempClassId, bool:tempSubClassActivated
-	
-	ArrayGetString(arrayZombieClassName, classId, className, charsmax(className))
 
-	for(new i; i < lZombieSubClassCount; i++)
+	new lClassName[64]
+	new lCurrentClassHealth, lCurrentClassSpeed, lCurrentClassGravity
+
+	ArrayGetString(arrayClassZombieName, zi_core_class_zombie_arrayslot_get(classId), lClassName, charsmax(lClassName))
+
+	if(zi_core_client_zombie_get(id, true) == classId)
 	{
-		if(classId == ArrayGetCell(gZombieSubClassGlobalId, i))
-		{
-			lClassZombieSubHealth = ArrayGetCell(arrayClassZombieSubHealth, i)
-			lClassZombieSubHealthStr = mg_core_integer_to_formal(lClassZombieSubHealth)
-			lClassZombieSubSpeed = Float:ArrayGetCell(arrayClassZombieSubSpeed, i)
-			lClassZombieSubGravity = Float:ArrayGetCell(arrayClassZombieSubGravity, i)
-			break
-		}
+		new lArrayId = zi_core_class_zombiesub_arrayslot_get(classId)
+
+		lCurrentClassHealth = ArrayGetCell(arrayClassZombieSubHealth, lArrayId)
+		lCurrentClassSpeed = ArrayGetCell(arrayClassZombieSubSpeed, lArrayId)
+		lCurrentClassGravity = ArrayGetCell(arrayClassZombieSubGravity, lArrayId)
 	}
-	
-	len += formatex(menu[len], charsmax(menu) - len, "%s^n", createTitle(id, "TITLE_SUBZOMBIECLASSES"))
-	len += formatex(menu[len], charsmax(menu) - len, "^n")
-	len += formatex(menu[len], charsmax(menu) - len, "  %L^n", id, "MENU_SUBZOMBIECLASSES1", id, className)
-	len += formatex(menu[len], charsmax(menu) - len, "  %L^n", id, "MENU_SUBZOMBIECLASSES2", classHealthStr)
-	len += formatex(menu[len], charsmax(menu) - len, "  %L^n", id, "MENU_SUBZOMBIECLASSES3", classSpeed, classGravity)
-	len += formatex(menu[len], charsmax(menu) - len, "  %L^n", id, "MENU_SUBZOMBIECLASSES4", classKnockback)
-	len += formatex(menu[len], charsmax(menu) - len, "^n")
-	for(new i;i < lZombieSubClassCount; i++)
+	else
 	{
-		tempClassId = ArrayGetCell(gZombieSubClassGlobalId, i)
-		
-		if(tempClassId != classId)
+		new lArrayId = zi_core_class_zombiesub_arrayslot_get((ArrayGetCell(arrayClassZombieDefSubClass, zi_core_class_zombie_arrayslot_get(classId))))
+
+		lCurrentClassHealth = ArrayGetCell(arrayClassZombieSubHealth, lArrayId)
+		lCurrentClassSpeed = ArrayGetCell(arrayClassZombieSubSpeed, lArrayId)
+		lCurrentClassGravity = ArrayGetCell(arrayClassZombieSubGravity, lArrayId)
+	}
+
+	new menu[500], len, pickId = 1
+	new lZombieSubClassCount = ArraySize(arrayClassZombieSubId), lClassCounter, lUserNextClass
+	new bool:lClassAvailable, lCurrentClassName[64], lCurrentClassDesc[64], lCurrentSubClassCount
+	new lCurrentClassId, lCurrentClassParent
+
+	lUserNextClass = zi_core_client_zombiesub_get(id, true)
+
+	len = mg_core_menu_title_create(id, "MC TITLE_SUBZCLASSES", menu, charsmax(menu))
+	len += formatex(menu[len], charsmax(menu) - len, "^n")
+	len += formatex(menu[len], charsmax(menu) - len, "  %L^n", id, "MC MENU_SUBZCLASSES1", id, lClassName)
+	len += formatex(menu[len], charsmax(menu) - len, "  %L^n", id, "MC MENU_SUBZCLASSES2", mg_core_integer_to_formal(lCurrentClassHealth))
+	len += formatex(menu[len], charsmax(menu) - len, "  %L^n", id, "MC MENU_SUBZCLASSES3", lCurrentClassSpeed, lCurrentClassGravity)
+	len += formatex(menu[len], charsmax(menu) - len, "^n")
+	for(new lCurrentArrayId; lCurrentArrayId < lZombieSubClassCount && pickId < SUBZCLASS_IPP; lCurrentArrayId++)
+	{
+		lCurrentClassId = ArrayGetCell(arrayClassZombieSubId, lCurrentArrayId)
+		lCurrentClassParent = ArrayGetCell(arrayClassZombieSubParent, lCurrentArrayId)
+
+		if(lCurrentClassParent != classId)
 			continue
-		
-		if(subClassCounter < mPage*4-4)
+
+		if(lClassCounter < mPage*SUBZCLASS_IPP-SUBZCLASS_IPP)
 		{
-			subClassCounter++
+			lCurrentSubClassCount++
+			lClassCounter++
 			continue
 		}
-		if(subClassCounter > mPage*4-1)
-			break
-		
-		subClassCrit = ArrayGetCell(gZombieSubClassCrit, i)
-		
-		if(subClassCrit)
+		if(lClassCounter > mPage*SUBZCLASS_IPP-1)
 		{
-			new retValue
-			ExecuteForward(gForwardSubClassCritCheck, retValue, id, i)
-			
-			if(retValue == 0)
+			lCurrentSubClassCount++
+			continue
+		}
+
+		ArrayGetString(arrayClassZombieSubName, lCurrentArrayId, lCurrentClassName, charsmax(lCurrentClassName))
+		ArrayGetString(arrayClassZombieSubDesc, lCurrentArrayId, lCurrentClassDesc, charsmax(lCurrentClassDesc))
+		lClassAvailable = zi_core_client_zombiesub_available(id, lCurrentClassId)
+
+		if(lClassAvailable)
+		{
+			if(lUserNextClass != lCurrentClassId)
 			{
-				log_amx("[ZP] Didn't get sub zombie criterium from forward (%d)", i)
-				continue
+				len += formatex(menu[len], charsmax(menu) - len, "\r%d. \w%L  \r%L^n", pickId, id, lCurrentClassName, id, lCurrentClassDesc)
 			}
-			if(retValue == PLUGIN_HANDLED)	tempSubClassActivated = true
-			else				tempSubClassActivated = false
+			else
+			{
+				len += formatex(menu[len], charsmax(menu) - len, "\r%d. \y%L  \r%L^n", pickId, id, lCurrentClassName, id, lCurrentClassDesc)
+			}
 		}
-		else 	tempSubClassActivated = true
-		
-		ArrayGetString(gZombieSubClassName, i, subClassName, charsmax(subClassName))
-		ArrayGetString(gZombieSubClassDesc, i, subClassDesc, charsmax(subClassDesc))
-		
-		if(!subClassCrit)
-			len += formatex(menu[len], charsmax(menu) - len, "\r%d. %s%L  \r%L^n", pickId, gZombieSubClassNext[id] == i ? "\y":"\w", id, subClassName, id, subClassDesc)
 		else
 		{
-			new subClassCritDesc[33]
-			ArrayGetString(gZombieSubClassCritDesc, i, subClassCritDesc, charsmax(subClassCritDesc))
-			
-			if(tempSubClassActivated)
-				len += formatex(menu[len], charsmax(menu) - len, "\r%d. %s%L \r%L  %L^n", pickId, gZombieSubClassNext[id] == i ? "\y":"\w", id, subClassName, id, subClassCritDesc, id, subClassDesc)
+			if(lUserNextClass != lCurrentClassId)
+			{
+				len += formatex(menu[len], charsmax(menu) - len, "\r%d. \w%L  \r%L^n", pickId, id, lCurrentClassName, id, lCurrentClassDesc)
+			}
 			else
-				len += formatex(menu[len], charsmax(menu) - len, "\d%d. %L \r%L  %L^n", pickId, id, subClassName, id, subClassCritDesc, id, subClassDesc)
+			{
+				len += formatex(menu[len], charsmax(menu) - len, "\r%d. \d%L  %L^n", pickId, id, lCurrentClassName, id, lCurrentClassDesc)
+			}
 		}
-		
-		gSubClassesChosen[pickId-1][id] = i
-		
+
+		gMenuSubClassPicks[id][pickId] = lCurrentArrayId
+		lCurrentSubClassCount++
 		pickId++
 	}
-	for(new i=1; i<4; i++)	
-		if(!gSubClassesChosen[i][id])
-			gSubClassesChosen[i][id] = -1
-	
+	if(pickId == 1)
+	{
+		if(mPage == 1)
+		{
+			log_amx("[SUBZCLASSMENU] No subclasses were found for this class! (%d)", classId)
+			menu_open_zclasses(id, gMenuZClassPage[id])
+			return false
+		}
+
+		log_amx("[SUBZCLASSMENU] No subclasses were found on this page! (classId: %d | mPage:)", classId, mPage)
+		return menu_open_subzclasses(id, classId, mPage - 1)
+	}
+	for(; pickId < SUBZCLASS_IPP; pickId++)
+	{
+		gMenuSubClassPicks[id][pickId] = -1
+	}
 	len += formatex(menu[len], charsmax(menu) - len, "^n")
-	//len += formatex(menu[len], charsmax(menu) - len, "  %s8.%s %L^n", mPage == 1 ? "\d":"\r", mPage == 1 ? "\d":"\w", id, "MENU_BACK")
-	//len += formatex(menu[len], charsmax(menu) - len, "  %s9.%s %L^n", mPage*4 >= lZombieSubClassCount ? "\d":"\r", mPage*4 >= lZombieSubClassCount ? "\d":"\w", id, "MENU_NEXT")
-	len += formatex(menu[len], charsmax(menu) - len, "\r0.\w %L", id, "MENU_EXIT")
-	
-	gPage[id] = mPage
-	
+	if(lCurrentSubClassCount > SUBZCLASS_IPP)
+	{
+		if(mPage == 1)
+			len += formatex(menu[len], charsmax(menu) - len, "\d8. %L^n", id, "MC MENU_BACK")
+		else
+			len += formatex(menu[len], charsmax(menu) - len, "\r8. \w%L^n", id, "MC MENU_BACK")
+		
+		if(mPage*SUBZCLASS_IPP >= lCurrentSubClassCount)
+			len += formatex(menu[len], charsmax(menu) - len, "\d9. %L^n", id, "MC MENU_NEXT")
+		else
+			len += formatex(menu[len], charsmax(menu) - len, "\r9. \w%L^n", id, "MC MENU_NEXT")
+	}
+	len += formatex(menu[len], charsmax(menu) - len, "\r0.\w %L", id, "MC MENU_BACKTOZCLASSES")
+
+	gMenuSubClassState[id] = classId
+	gMenuSubClassPage[id] = mPage
+	gMenuSubClassCount[id] = lCurrentSubClassCount
+
 	// Fix for AMXX custom menus
 	set_pdata_int(id, OFFSET_CSMENUCODE, 0)
 	show_menu(id, KEYSMENU, menu, -1, "ZombieClasses SubMenu")
 	
+	return true
+}
+
+public menu_subzclasses_handle(id, key)
+{
+	if(key < SUBZCLASS_IPP)
+	{
+		if(gMenuSubClassPicks[id][key] != -1)
+		{
+			zi_core_client_zombie_set(id, _, gMenuSubClassPicks[id][key])
+			menu_open_subzclasses(id, gMenuSubClassState[id], gMenuSubClassPage[id])
+			return PLUGIN_HANDLED
+		}
+	}
+	if(key == 7)
+	{
+    	if(gMenuSubClassPage[id] != 1) gMenuSubClassPage[id]--
+    
+    	menu_open_subzclasses(id, gMenuSubClassPage[id])
+    	return PLUGIN_HANDLED
+	}
+	if(key == 8)
+	{
+    	if(gMenuSubClassPage[id]*SUBZCLASS_IPP < gMenuSubClassCount[id]) gMenuSubClassPage[id]++
+
+    	menu_open_subzclasses(id, gMenuSubClassPage[id])
+    	return PLUGIN_HANDLED
+	}
+	if(key == 9)
+		menu_open_zclasses(id)
+
 	return PLUGIN_HANDLED
 }
 
