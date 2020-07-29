@@ -2,7 +2,9 @@
 #include <amxmisc>
 #include <fakemeta>
 #include <mg_core>
+#include <zi_regsystem_menu>
 #include <zi_core>
+#include <zi_menu_classes>
 
 #define PLUGIN "[MG][ZI] Static Menus"
 #define VERSION "1.0"
@@ -87,11 +89,11 @@ public menu_main_open(id)
 	len += formatex(menu[len], charsmax(menu)-len, "\r4. \w%L^n", id, "MS MENU_MAIN4") // Ammo lekérése
 	len += formatex(menu[len], charsmax(menu)-len, "^n")
 	len += formatex(menu[len], charsmax(menu)-len, "\r5. \w%L^n", id, "MS MENU_MAIN5") // *Áruház*
-	len += formatex(menu[len], charsmax(menu)-len, "\r6. \w%L^n", id, "MS MENU_MAIN6") // *Küldetések* [örökös küldetés/x][Heti küldi/x][Napi küldi/x]
-	len += formatex(menu[len], charsmax(menu)-len, "\r7. \w%L^n", id, "MS MENU_MAIN7") // *Klán menü* Klán név lekérése/Nincs Klán
+	len += formatex(menu[len], charsmax(menu)-len, "\r6. \w%L^n", id, "MS MENU_MAIN6") // *VIP Menü*
 	len += formatex(menu[len], charsmax(menu)-len, "^n")
-	len += formatex(menu[len], charsmax(menu)-len, "\r8. \w%L^n", id, "MS MENU_MAIN8") // Beállítások
-	len += formatex(menu[len], charsmax(menu)-len, "\r9. \w%L^n", id, "MS MENU_MAIN9") // Reg menü
+	len += formatex(menu[len], charsmax(menu)-len, "\r7. \w%L^n", id, "MS MENU_MAIN7") // Beállítások
+	len += formatex(menu[len], charsmax(menu)-len, "\r8. \w%L^n", id, "MS MENU_MAIN8") // Felhasználó/Reg menü
+	len += formatex(menu[len], charsmax(menu)-len, "\r9. \w%L^n", id, "MS MENU_MAIN9") // Nyelvválasztás
 	len += formatex(menu[len], charsmax(menu)-len, "^n")
 	len += formatex(menu[len], charsmax(menu)-len, "^n0. \w%L", id, "MS MENU_EXIT")
 
@@ -112,11 +114,11 @@ public menu_main_handle(id, key)
 		}
 		case 1:
 		{
-			// Zobmi kaszt menü megnyitása
+			zi_menu_open_zclasses(id)
 		}
 		case 2:
 		{
-			// Ember kaszt menü megnyitás
+			zi_menu_open_hclasses(id)
 		}
 		case 3:
 		{
@@ -128,19 +130,20 @@ public menu_main_handle(id, key)
 		}
 		case 5:
 		{
-			menu_missions_open(id)
+			// VIP Menü megnyitása
 		}
 		case 6:
 		{
-			// Klán menü megnyitása
+			menu_settings_open(id)
 		}
 		case 7:
 		{
-			menu_settings_open(id)
+			// Felhasználó/Regmenü megnyitása
 		}
 		case 8:
 		{
-			// Regmenü megnyitása
+			userSetNextLanguage(id)
+			menu_main_open(id)
 		}
 	}
 
@@ -388,4 +391,55 @@ public native_menu_open_weapons(plugin_id, param_num)
 	menu_weapons_open(id)
 
 	return true
+}
+
+userSetNextLanguage(id)
+{
+	new lUserLang[3]
+	get_user_info(id, "language", lUserLang, charsmax(lUserLang))
+
+	new bool:lChanged = false
+
+	for(new i; i < sizeof(mgLanguageList); i++)
+	{
+		if(equal(mgLanguageList[i], lUserLang))
+		{
+			if(i+1 >= sizeof(mgLanguageList))
+			{
+				copy(lUserLang, charsmax(lUserLang), mgLanguageList[0])
+				lChanged = true
+				break
+			}
+			else
+			{
+				copy(lUserLang, charsmax(lUserLang), mgLanguageList[i+1])
+				lChanged = true
+				break
+			}
+		}
+	}
+
+	if(!lChanged)
+	{
+		for(new i; i < sizeof(mgLanguageList); i++)
+		{
+			if(equal(mgLanguageList[i], mgDefLang))
+			{
+				if(i+1 >= sizeof(mgLanguageList))
+				{
+					copy(lUserLang, charsmax(lUserLang), mgLanguageList[0])
+					lChanged = true
+					break
+				}
+				else
+				{
+					copy(lUserLang, charsmax(lUserLang), mgLanguageList[i+1])
+					lChanged = true
+					break
+				}
+			}
+		}
+	}
+
+	set_user_info(id, "lang", lUserLang)
 }

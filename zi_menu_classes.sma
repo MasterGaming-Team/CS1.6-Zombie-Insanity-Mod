@@ -90,8 +90,6 @@ menu_open_zclasses(id, mPage = 1)
     
     new menu[500], len, lZombieClassCount
 
-    menu[0] = EOS
-    len = 0
     lZombieClassCount = ArraySize(arrayClassZombieId)
 
     while(lZombieClassCount < mPage*7-7)
@@ -331,7 +329,7 @@ public menu_subzclasses_handle(id, key)
 	return PLUGIN_HANDLED
 }
 
-public menu_open_hclasses(id, mPage = 1)
+menu_open_hclasses(id, mPage = 1)
 {
     if(!is_user_connected(id))
         return

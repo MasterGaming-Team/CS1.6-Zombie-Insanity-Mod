@@ -59,20 +59,35 @@ new Array:arrayClassHeroTeam
 
 new Handle:gSqlClassTuple
 
-new bool:gAllowLaser, bool:gAllowShield, bool:gAllowInfect, bool:gAllowRespawn
+new bool:gAllowLaser
+new bool:gAllowShield
+new bool:gAllowInfect
+new bool:gAllowRespawn
 
-new gUserClassZombieNext[33], gUserClassZombieSubNext[33], gUserClassHumanNext[33]
-new gUserClassHero[33], gUserClassZombie[33], gUserClassZombieSub[33], gUserClassHuman[33]
+new gUserClassZombieNext[33]
+new gUserClassZombieSubNext[33]
+new gUserClassHumanNext[33]
+new gUserClassHero[33]
+new gUserClassZombie[33]
+new gUserClassZombieSub[33]
+new gUserClassHuman[33]
 
-new gGamemodeCurrent, gGamemodeNext
+new gGamemodeCurrent
+new gGamemodeNext
 
 new retValue
 
 new gMaxPlayers
 
-new gForwardUserLast, gForwardUserSpawn
-new gForwardUserInfect, gForwardUserCure, gForwardUserHeroisate
-new gForwardGamemodeChosen, gForwardCountdownStart, gForwardGamemodeStart, gForwardGamemodeEnd
+new gForwardUserLast
+new gForwardUserSpawn
+new gForwardUserInfect
+new gForwardUserCure
+new gForwardUserHeroisate
+new gForwardGamemodeChosen
+new gForwardCountdownStart
+new gForwardGamemodeStart
+new gForwardGamemodeEnd
 new gForwardClassZombieSubCritCheck
 
 public plugin_init()
