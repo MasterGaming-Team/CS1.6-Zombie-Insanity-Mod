@@ -4,6 +4,7 @@
 #include <mg_core>
 #include <mg_regsystem_api>
 #include <sqlx>
+#include <zi_menu_static>
 #include <zi_regsystem_menu_const>
 
 #define PLUGIN "[MG] Regsystem Menu"
@@ -118,15 +119,13 @@ public menu_loggedin_open(id)
 	if(!is_user_connected(id) || !mg_reg_user_loggedin(id))
 		return false
 		
-	new menu[500], title[60], len
+	new menu[500], len
 
-	mg_core_menu_title_create(id, "MR REG_TITLE_LOGGEDIN", title, charsmax(title))
-			
-	len += formatex(menu[len], charsmax(menu) - len, "%s^n", title)
+	len = mg_core_menu_title_create(id, "MR REG_TITLE_LOGGEDIN", title, charsmax(title))
 	len += formatex(menu[len], charsmax(menu) - len, "^n")
 	len += formatex(menu[len], charsmax(menu) - len, "\r1.\w %L^n", id, "MR REG_MENU_LOGGEDIN1")   // Raktár
 	len += formatex(menu[len], charsmax(menu) - len, "\r2.\w %L^n", id, "MR REG_MENU_LOGGEDIN2")   // Aktivált itemek
-	len += formatex(menu[len], charsmax(menu) - len, "\r3.\w %L^n", id, "MR REG_MENU_LOGGEDIN3")   // Klán menü
+	len += formatex(menu[len], charsmax(menu) - len, "\d3. %L \r%L^n", id, "MR REG_MENU_LOGGEDIN3", id, "MR REG_MENU_UNDERCONSTRUCTION")   // Klán menü
 	len += formatex(menu[len], charsmax(menu) - len, "^n")
 	len += formatex(menu[len], charsmax(menu) - len, "\r4.\w %L^n", id, "MR REG_MENU_LOGGEDIN4")   // Küldetések[Napi/Heti/Örök]
 	len += formatex(menu[len], charsmax(menu) - len, "^n")
@@ -139,6 +138,7 @@ public menu_loggedin_open(id)
 	}
 	len += formatex(menu[len], charsmax(menu) - len, "^n")
 	len += formatex(menu[len], charsmax(menu) - len, "\r9.\w %L^n", id, "MR REG_MENU_LOGGEDIN9")   // Kijelentkezés
+	len += formatex(menu[len], charsmax(menu) - len, "^n")
 	len += formatex(menu[len], charsmax(menu) - len, "\r0.\w %L", id, "MR REG_MENU_BACKTOMAIN")
 
 	// Fix for AMXX custom menus
@@ -154,8 +154,21 @@ public menu_loggedin_handle(id, key)
 	{
 		case 0:
 		{
-			mg_core_chatmessage_print(id, MG_CM_FIX, _, "%L", id, "REG_CHAT_LOGOUTPROCESS")
-			mg_reg_user_logout(id)
+			menu_storage_open(id)
+		}
+		case 1:
+		{
+			menu_activeitemlist_open(id)
+		}
+		case 2:
+		{
+			// Klán geci
+			menu_loggedin_open(id)
+		}
+		case 4:
+		{
+			// Küldetés menü
+			menu_loggedin_open(id)
 		}
 		case 4:
 		{
@@ -209,6 +222,15 @@ public menu_loggedin_handle(id, key)
 					mg_reg_user_setting_set(id, MG_SETTING_AUTOLOGINSETINFO, true)
 			}
 			menu_loggedin_open(id)
+		}
+		case 8:
+		{
+			mg_core_chatmessage_print(id, MG_CM_FIX, _, "%L", id, "REG_CHAT_LOGOUTPROCESS")
+			mg_reg_user_logout(id)
+		}
+		case 9:
+		{
+			zi_menu_open_main(id)
 		}
 	}
 	
