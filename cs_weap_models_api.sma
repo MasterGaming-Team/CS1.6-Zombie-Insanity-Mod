@@ -292,7 +292,7 @@ RemoveCustomWeaponModel(id, weaponid)
 	}
 }
 
-public client_disconnect(id)
+public client_disconnected(id)
 {
 	// Remove custom models for player after disconnecting
 	new weaponid

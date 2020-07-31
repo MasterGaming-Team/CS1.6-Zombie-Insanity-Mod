@@ -4,6 +4,7 @@
 #include <mg_core>
 #include <mg_regsystem_api>
 #include <sqlx>
+#include <zi_memu_missions>
 #include <zi_menu_static>
 #include <zi_regsystem_menu_const>
 
@@ -172,8 +173,7 @@ public menu_loggedin_handle(id, key)
 		}
 		case 3:
 		{
-			// Küldetés menü
-			menu_loggedin_open(id)
+			zi_menu_missions_open(id)
 		}
 		case 4:
 		{
@@ -1148,6 +1148,11 @@ public sql_item_add_handle(FailState, Handle:Query, error[], errorcode, data[], 
 	new lItemId = data[2]
 	new lUserItemTime = data[3]
 	new lItemCategory = data[4]
+	new lAccountId = data[5]
+
+	if(lAccountId != mg_reg_user_accountid_get(id))
+		return
+
 	new lUserItemSortId = SQL_ReadResult(Query, SQL_FieldNameToNum(Query, "LAST_INSERT_ID()"))
 
 	new lUserItemArrayId
@@ -1556,17 +1561,19 @@ userAddItem(id, itemId, arrayId = -1)
 
 	new lSqlTxt[240]
 	new len
-	new data[5]
+	new data[6]
+	new lAccountId = mg_reg_user_accountid_get(id)
 
 	data[0] = id
 	data[1] = arrayId
 	data[2] = ArrayGetCell(arrayItemId, arrayId)
 	data[3] = ArrayGetCell(arrayItemTime, arrayId) + get_systime()
 	data[4] = ArrayGetCell(arrayItemCategory, arrayId)
+	data[5] = lAccountId
 
 	len = formatex(lSqlTxt, charsmax(lSqlTxt), "INSERT INTO ownedItemList ")
 	len += formatex(lSqlTxt[len], charsmax(lSqlTxt) - len, "(itemId, itemTime, itemCategory, accountId) VALUES ")
-	len += formatex(lSqlTxt[len], charsmax(lSqlTxt) - len, "(%d, %d, %d, %d);", data[2], data[3], data[4], mg_reg_user_accountid_get(id))
+	len += formatex(lSqlTxt[len], charsmax(lSqlTxt) - len, "(%d, %d, %d, %d);", data[2], data[3], data[4], lAccountId)
 	len += formatex(lSqlTxt[len], charsmax(lSqlTxt) - len, "SELECT LAST_INSERT_ID();")
 	SQL_ThreadQuery(gSqlItemTuple, "sql_user_item_add_handle", lSqlTxt, data, sizeof(data))
 	
