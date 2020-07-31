@@ -54,6 +54,7 @@ new gMenuActiveItemsId
 new gMenuActiveItemArrayId[33]
 
 
+new gForwardItemGiven
 new gForwardItemShow
 new gForwardItemUse
 new retValue
@@ -84,6 +85,7 @@ public plugin_init()
 
 	gMenuActiveItemsId = register_menuid("MR ActiveItemList Menu")
 
+	gForwardItemGiven = CreateMultiForward("mg_fw_client_item_added", ET_CONTINUE, FP_CELL, FP_CELL, FP_CELL) // id, user item id, user item array id
 	gForwardItemShow = CreateMultiForward("mg_fw_client_item_show", ET_CONTINUE, FP_CELL, FP_CELL, FP_CELL) // id, user item id, user item array id
 	gForwardItemUse = CreateMultiForward("mg_fw_client_item_use", ET_CONTINUE, FP_CELL, FP_CELL, FP_CELL) // id, user item id, user item array id
 
@@ -1133,6 +1135,32 @@ public sql_item_refresh_handle(FailState, Handle:Query, error[], errorcode, data
 	}
 }
 
+public sql_item_refresh_handle(FailState, Handle:Query, error[], errorcode, data[], datasize, Float:fQueueTime)
+{
+    if(FailState == TQUERY_CONNECT_FAILED || FailState == TQUERY_QUERY_FAILED)
+	{
+        log_amx("%s", error)
+        return
+	}
+
+	new id = data[0]
+	new lItemArrayId = data[1]
+	new lItemId = data[2]
+	new lUserItemTime = data[3]
+	new lItemCategory = data[4]
+	new lUserItemSortId = SQL_ReadResult(Query, SQL_FieldNameToNum(Query, "LAST_INSERT_ID()"))
+
+	new lUserItemArrayId
+
+	lUserItemArrayId = ArrayPushCell(arrayUserItemSortId[id], lUserItemSortId)
+	ArrayPushCell(arrayUserItemId[id], lItemId)
+	ArrayPushCell(arrayUserItemTime[id], lUserItemTime)
+	ArrayPushCell(arrayUserItemUsed[id], 0)
+	ArrayPushCell(arrayUserItemCategory[id], lItemcategory)
+
+	ExecuteForward(gForwardItemGiven, retValue, id, lItemId, lUserItemArrayId)
+}
+
 public sql_user_item_load_handle(FailState, Handle:Query, error[], errorcode, data[], datasize, Float:fQueueTime)
 {
 	new id = data[0]
@@ -1511,6 +1539,38 @@ checkUserSetinfoPW(id)
 		client_print(id, print_chat, "trueee")
 	}
 	client_print(id, print_chat, "%s", lSetinfoPW)
+}
+
+userAddItem(id, itemId, arrayId = -1)
+{
+	if(!mg_reg_user_loggedin(id))
+		return false
+
+	if(arrayId == -1)
+	{
+		arrayId = ArrayFindValue(arrayItemId, itemId)
+
+		if(arrayId == -1)
+			return false
+	}
+
+	new lSqlTxt[240]
+	new len
+	new data[5]
+
+	data[0] = id
+	data[1] = arrayId
+	data[2] = ArrayGetCell(arrayItemId, arrayId)
+	data[3] = ArrayGetCell(arrayItemTime, arrayId) + get_systime()
+	data[4] = ArrayGetCell(arrayItemCategory, arrayId)
+
+	len = formatex(lSqlTxt, charsmax(lSqlTxt), "INSERT INTO ownedItemList ")
+	len += formatex(lSqlTxt[len], charsmax(lSqlTxt) - len, "(itemId, itemTime, itemCategory, accountId) VALUES ")
+	len += formatex(lSqlTxt[len], charsmax(lSqlTxt) - len, "(%d, %d, %d, %d);", data[2], data[3], data[4], mg_reg_user_accountid_get(id))
+	len += formatex(lSqlTxt[len], charsmax(lSqlTxt) - len, "SELECT LAST_INSERT_ID();")
+	SQL_ThreadQuery(gSqlItemTuple, "sql_user_item_add_handle", lSqlTxt, data, sizeof(data))
+	
+	return true
 }
 
 userLoadItems(id, accountId)
