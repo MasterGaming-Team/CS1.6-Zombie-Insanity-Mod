@@ -103,6 +103,9 @@ public plugin_natives()
 	arrayItemCategory = ArrayCreate(1)
 	arrayItemTime = ArrayCreate(1)
 
+	register_native("mg_reg_arrayid_item_get", "native_arrayid_item_get")
+	register_native("mg_reg_arrayid_useritem_get", "native_arrayid_useritem_get")
+
 	register_native("mg_menu_reg_open", "native_reg_open")
 }
 
@@ -1320,6 +1323,47 @@ public msgRegEMail(id)
 	
 	menu_register_open(id)
 	return PLUGIN_HANDLED
+}
+
+public native_arrayid_item_get(plugin_id, param_num)
+{
+	if(get_param(1) != -1)
+		set_param_byref(1, int:arrayItemId)
+
+	if(get_param(2) != -1)
+		set_param_byref(2, int:arrayItemName)
+	
+	if(get_param(3) != -1)
+		set_param_byref(3, int:arrayItemDesc)
+
+	if(get_param(4) != -1)
+		set_param_byref(4, int:arrayItemCategory)
+
+	if(get_param(5) != -1)
+		set_param_byref(5, int:arrayItemTime)
+}
+
+public native_arrayid_useritem_get(plugin_id, param_num)
+{
+	new id = get_param(1)
+
+	if(!is_user_connected(id))
+		return
+	
+	if(get_param(2) != -1)
+		set_param_byref(2, int:arrayUserItemSortId[id])
+	
+	if(get_param(3) != -1)
+		set_param_byref(3, int:arrayUserItemId[id])
+
+	if(get_param(4) != -1)
+		set_param_byref(4, int:arrayUserItemTime[id])
+	
+	if(get_param(5) != -1)
+		set_param_byref(5, int:arrayUserItemUsed[id])
+
+	if(get_param(6) != -1)
+		set_param_byref(6, int:arrayUserItemCategory[id])
 }
 
 public native_reg_open(plugin_id, param_num)
