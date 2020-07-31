@@ -1135,7 +1135,7 @@ public sql_item_refresh_handle(FailState, Handle:Query, error[], errorcode, data
 	}
 }
 
-public sql_item_refresh_handle(FailState, Handle:Query, error[], errorcode, data[], datasize, Float:fQueueTime)
+public sql_item_add_handle(FailState, Handle:Query, error[], errorcode, data[], datasize, Float:fQueueTime)
 {
     if(FailState == TQUERY_CONNECT_FAILED || FailState == TQUERY_QUERY_FAILED)
 	{
