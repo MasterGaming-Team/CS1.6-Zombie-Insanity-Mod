@@ -396,7 +396,7 @@ public native_menu_open_weapons(plugin_id, param_num)
 userSetNextLanguage(id)
 {
 	new lUserLang[3]
-	get_user_info(id, "language", lUserLang, charsmax(lUserLang))
+	get_user_info(id, "lang", lUserLang, charsmax(lUserLang))
 
 	new bool:lChanged = false
 

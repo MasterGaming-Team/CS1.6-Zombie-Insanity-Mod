@@ -121,7 +121,7 @@ public menu_loggedin_open(id)
 		
 	new menu[500], len
 
-	len = mg_core_menu_title_create(id, "MR REG_TITLE_LOGGEDIN", title, charsmax(title))
+	len = mg_core_menu_title_create(id, "MR REG_TITLE_LOGGEDIN", menu, charsmax(menu))
 	len += formatex(menu[len], charsmax(menu) - len, "^n")
 	len += formatex(menu[len], charsmax(menu) - len, "\r1.\w %L^n", id, "MR REG_MENU_LOGGEDIN1")   // Raktár
 	len += formatex(menu[len], charsmax(menu) - len, "\r2.\w %L^n", id, "MR REG_MENU_LOGGEDIN2")   // Aktivált itemek
@@ -165,7 +165,7 @@ public menu_loggedin_handle(id, key)
 			// Klán geci
 			menu_loggedin_open(id)
 		}
-		case 4:
+		case 3:
 		{
 			// Küldetés menü
 			menu_loggedin_open(id)
@@ -823,7 +823,7 @@ public menu_userinfo_open(id)
 	len += formatex(menu[len], charsmax(menu) - len, "\r1.\w %L^n", id, "MR REG_MENU_USERINFO1")
 	len += formatex(menu[len], charsmax(menu) - len, "\r2.\w %L^n", id, "MR REG_MENU_USERINFO2")
 	len += formatex(menu[len], charsmax(menu) - len, "^n")
-	len += formatex(menu[len], charsmax(menu) - len, "\r3.\w %L^n", id, "MR REG_MENU_USERINFO4")
+	len += formatex(menu[len], charsmax(menu) - len, "\r4.\w %L^n", id, "MR REG_MENU_USERINFO4")
 	len += formatex(menu[len], charsmax(menu) - len, "^n")
 	len += formatex(menu[len], charsmax(menu) - len, "\r0.\w %L", id, "MR REG_MENU_BACKTOMAIN")
 
@@ -838,14 +838,23 @@ public menu_userinfo_handle(id, key)
 {
 	switch(key)
 	{
-		case 0: menu_login_open(id)
-		case 1: menu_register_open(id)
-		case 2:
+		case 0: 
 		{
-			// IDE NYELVVÁLTÁST
+			menu_login_open(id)
+		}
+		case 1:
+		{
+			menu_register_open(id)
+		}
+		case 3:
+		{
+			userSetNextLanguage(id)
 			menu_userinfo_open(id)
 		}
-		//case 9: mód főmenüjének megnyitása
+		case 9:
+		{
+			zi_menu_open_main(id)
+		}
 	}
 	
 	return PLUGIN_HANDLED
@@ -875,7 +884,7 @@ public menu_login_open(id)
 	
 	len += formatex(menu[len], charsmax(menu) - len, "\r3.\w %L^n", id, "MR REG_MENU_LOGIN3")
 	len += formatex(menu[len], charsmax(menu) - len, "^n")
-	len += formatex(menu[len], charsmax(menu) - len, "\r4.\w %L^n", id, "MR REG_MENU_LOGIN4")
+	len += formatex(menu[len], charsmax(menu) - len, "\r5.\w %L^n", id, "MR REG_MENU_LOGIN4")
 	len += formatex(menu[len], charsmax(menu) - len, "^n")
 	len += formatex(menu[len], charsmax(menu) - len, "\r0.\w %L", id, "MR REG_MENU_STEPBACK")
 			
@@ -930,9 +939,9 @@ public menu_login_handle(id, key)
 			mg_reg_user_login(id, gUsername[id], lHashPassword)
 			mg_core_chatmessage_print(id, MG_CM_FIX, _, "%L", id, "REG_CHAT_LOGINPLSWAIT")
 		}
-		case 3:
+		case 4:
 		{
-			// IDE NYELVVÁLTÁST
+			userSetNextLanguage(id)
 			menu_login_open(id)
 		}
 		case 9:
@@ -979,7 +988,7 @@ public menu_register_open(id)
 	
 	len += formatex(menu[len], charsmax(menu) - len, "\r5.\w %L^n", id, "MR REG_MENU_REGISTER5")
 	len += formatex(menu[len], charsmax(menu) - len, "^n")
-	len += formatex(menu[len], charsmax(menu) - len, "\r6.\w %L^n", id, "MR REG_MENU_REGISTER6")
+	len += formatex(menu[len], charsmax(menu) - len, "\r7.\w %L^n", id, "MR REG_MENU_REGISTER6")
 	len += formatex(menu[len], charsmax(menu) - len, "^n")
 	len += formatex(menu[len], charsmax(menu) - len, "\r0.\w %L", id, "MR REG_MENU_STEPBACK")
 			
@@ -1063,9 +1072,9 @@ public menu_register_handle(id, key)
 			mg_reg_user_register(id, gUsername[id], lHashPassword, gEMail[id])
 			mg_core_chatmessage_print(id, MG_CM_FIX, _, "%L", id, "REG_CHAT_REGPLSWAIT")
 		}
-		case 5:
+		case 6:
 		{
-			// IDE NYELVVÁLTÁST
+			userSetNextLanguage(id)
 			menu_register_open(id)
 		}
 		case 9:
@@ -1611,6 +1620,57 @@ unixToItemTime(unixTime, &Days = 0, &Hours = 0, &Minutes = 0, &Seconds = 0)
 	Hours = (unixTime%86400)/3600
 	Minutes = ((unixTime%86400)%3600)/60
 	Seconds = (((unixTime%86400)%3600)%60)
+}
+
+userSetNextLanguage(id)
+{
+	new lUserLang[3]
+	get_user_info(id, "lang", lUserLang, charsmax(lUserLang))
+
+	new bool:lChanged = false
+
+	for(new i; i < sizeof(mgLanguageList); i++)
+	{
+		if(equal(mgLanguageList[i], lUserLang))
+		{
+			if(i+1 >= sizeof(mgLanguageList))
+			{
+				copy(lUserLang, charsmax(lUserLang), mgLanguageList[0])
+				lChanged = true
+				break
+			}
+			else
+			{
+				copy(lUserLang, charsmax(lUserLang), mgLanguageList[i+1])
+				lChanged = true
+				break
+			}
+		}
+	}
+
+	if(!lChanged)
+	{
+		for(new i; i < sizeof(mgLanguageList); i++)
+		{
+			if(equal(mgLanguageList[i], mgDefLang))
+			{
+				if(i+1 >= sizeof(mgLanguageList))
+				{
+					copy(lUserLang, charsmax(lUserLang), mgLanguageList[0])
+					lChanged = true
+					break
+				}
+				else
+				{
+					copy(lUserLang, charsmax(lUserLang), mgLanguageList[i+1])
+					lChanged = true
+					break
+				}
+			}
+		}
+	}
+
+	set_user_info(id, "lang", lUserLang)
 }
 
 //By Exolent[jNr]
