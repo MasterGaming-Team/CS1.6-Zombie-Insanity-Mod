@@ -50,6 +50,7 @@ public plugin_init()
     zi_core_arrayid_human_get(int:arrayClassHumanId, int:arrayClassHumanName, int:arrayClassHumanDesc)
 
     register_menu("MC ZombieClasses Menu", KEYSMENU, "menu_zclasses_handle")
+    register_menu("MC SubZombieClasses Menu", KEYSMENU, "menu_subzclasses_handle")
 
     register_dictionary("zi_classmenus.txt")
 }
@@ -87,7 +88,7 @@ menu_open_zclasses(id, mPage = 1)
 {
     if(!is_user_connected(id))
         return false
-    
+
     new menu[500], len, lZombieClassCount
 
     lZombieClassCount = ArraySize(arrayClassZombieId)
@@ -109,7 +110,7 @@ menu_open_zclasses(id, mPage = 1)
     lPlayersNextClass = zi_core_client_zombie_get(id, true)
 
     len = mg_core_menu_title_create(id, "MC TITLE_ZCLASSES", menu, charsmax(menu))
-    len += formatex(menu, charsmax(menu), "^n")
+    len += formatex(menu[len], charsmax(menu) - len, "^n")
 
     for(i = mPage*7-7;(i < lZombieClassCount && i <= mPage*7-1); i++)
     {
@@ -122,7 +123,7 @@ menu_open_zclasses(id, mPage = 1)
 		pickId++
     }
 
-    len += formatex(menu, charsmax(menu), "^n")
+    len += formatex(menu[len], charsmax(menu) - len, "^n")
     len += formatex(menu[len], charsmax(menu) - len, "%s8.%s %L^n", mPage == 1 ? "\d":"\r", mPage == 1 ? "\d":"\w", id, "MC MENU_BACK")
     len += formatex(menu[len], charsmax(menu) - len, "%s9.%s %L^n", mPage*7 >= lZombieClassCount ? "\d":"\r", mPage*7 >= lZombieClassCount ? "\d":"\w", id, "MC MENU_NEXT")
     len += formatex(menu[len], charsmax(menu) - len, "\r0.\w %L", id, "MC MENU_BACKTOMAIN")
@@ -137,12 +138,12 @@ menu_open_zclasses(id, mPage = 1)
 
 public menu_zclasses_handle(id, key)
 {
-    new lClassId = (gMenuZClassPage[id]-1)*7+key
+    new lArrayId = (gMenuZClassPage[id]-1)*7+key
     new lZombieClassCount = ArraySize(arrayClassZombieId)
 
-    if(lClassId < lZombieClassCount && key < 7)
+    if(lArrayId < lZombieClassCount && key < 7)
     {
-    	menu_open_subzclasses(id, lClassId)
+    	menu_open_subzclasses(id, ArrayGetCell(arrayClassZombieId, lArrayId))
     	return PLUGIN_HANDLED
     }
     if(key == 7)
@@ -293,7 +294,7 @@ menu_open_subzclasses(id, classId, mPage = 1)
 
 	// Fix for AMXX custom menus
 	set_pdata_int(id, OFFSET_CSMENUCODE, 0)
-	show_menu(id, KEYSMENU, menu, -1, "ZombieClasses SubMenu")
+	show_menu(id, KEYSMENU, menu, -1, "MC SubZombieClasses Menu")
 	
 	return true
 }
