@@ -2,6 +2,7 @@
 #include <amxmisc>
 #include <fakemeta>
 #include <mg_core>
+#include <mg_regsystem_api>
 #include <zi_regsystem_menu>
 #include <zi_core>
 #include <zi_menu_classes>
@@ -83,16 +84,21 @@ public menu_main_open(id)
 	
 	len = mg_core_menu_title_create(id, "MS TITLE_MAIN", menu, charsmax(menu), true)
 	len += formatex(menu[len], charsmax(menu)-len, "^n")
-	len += formatex(menu[len], charsmax(menu)-len, "\r1. \w%L^n", id, "MS MENU_MAIN1") // Elsődleges fegyvernév lekérése
+	len += formatex(menu[len], charsmax(menu)-len, "\r1. \w%L^n", id, "MS MENU_MAIN1", id, "WEAPONNAME") // Elsődleges fegyvernév lekérése
 	len += formatex(menu[len], charsmax(menu)-len, "\r2. \w%L^n", id, "MS MENU_MAIN2", id, lClassZombieSubName)
 	len += formatex(menu[len], charsmax(menu)-len, "\r3. \w%L^n", id, "MS MENU_MAIN3", id, lClassHumanName)
-	len += formatex(menu[len], charsmax(menu)-len, "\r4. \w%L^n", id, "MS MENU_MAIN4") // Ammo lekérése
+	len += formatex(menu[len], charsmax(menu)-len, "\r4. \w%L^n", id, "MS MENU_MAIN4", id) // Ammo lekérése
 	len += formatex(menu[len], charsmax(menu)-len, "^n")
 	len += formatex(menu[len], charsmax(menu)-len, "\r5. \w%L^n", id, "MS MENU_MAIN5") // *Áruház*
 	len += formatex(menu[len], charsmax(menu)-len, "\r6. \w%L^n", id, "MS MENU_MAIN6") // *VIP Menü*
 	len += formatex(menu[len], charsmax(menu)-len, "^n")
 	len += formatex(menu[len], charsmax(menu)-len, "\r7. \w%L^n", id, "MS MENU_MAIN7") // Beállítások
-	len += formatex(menu[len], charsmax(menu)-len, "\r8. \w%L^n", id, "MS MENU_MAIN8") // Felhasználó/Reg menü
+	
+	if(mg_reg_user_loggedin(id))
+		len += formatex(menu[len], charsmax(menu)-len, "\r8. \w%L^n", id, "MS MENU_MAIN8LOGGEDIN") // Felhasználó menü
+	else
+		len += formatex(menu[len], charsmax(menu)-len, "\r8. \w%L^n", id, "MS MENU_MAIN8REGISTER") // Reg menü
+	
 	len += formatex(menu[len], charsmax(menu)-len, "\r9. \w%L^n", id, "MS MENU_MAIN9") // Nyelvválasztás
 	len += formatex(menu[len], charsmax(menu)-len, "^n")
 	len += formatex(menu[len], charsmax(menu)-len, "^n0. \w%L", id, "MS MENU_EXIT")
@@ -314,6 +320,7 @@ public menu_settings_handle(id, key)
 			if(lUserTeam == CS_TEAM_SPECTATOR)
 			{
 				flag_set(gTeamMenuOverride, id)
+				client_cmd(id, "chooseteam")
 				set_task(1.0, "delete_menu_override", id)
 			}
 			else if(lUserTeam == CS_TEAM_CT || lUserTeam == CS_TEAM_T)
@@ -342,6 +349,8 @@ public menu_spectator_open(id)
 	len = 0
 
 	len = mg_core_menu_title_create(id, "MS TITLE_SPECTATOR", menu, charsmax(menu))
+	len += formatex(menu[len], charsmax(menu)-len, "^n")
+	len += formatex(menu[len], charsmax(menu)-len, "\r%L^n", id, "MS MENU_SPECTATOR0")
 	len += formatex(menu[len], charsmax(menu)-len, "^n")
 	len += formatex(menu[len], charsmax(menu)-len, "\r1. \w%L^n", id, "MS MENU_SPECTATOR1")
 	len += formatex(menu[len], charsmax(menu)-len, "\r2. \w%L^n", id, "MS MENU_SPECTATOR2")
