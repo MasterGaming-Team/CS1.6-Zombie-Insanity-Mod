@@ -330,10 +330,7 @@ public native_arrayid_zombiesub_get(plugin_id, param_num)
         set_param_byref(2, int:arrayClassZombieSubId)
     
     if(get_param(3) != -1)
-    {
-        set_param_byref(3, 131)
-        console_print(0, "INCORE: %d", get_param(3))
-    }
+        set_param_byref(3, int:arrayClassZombieSubName)
 
     if(get_param(4) != -1)
         set_param_byref(4, int:arrayClassZombieSubDesc)
@@ -499,11 +496,11 @@ public native_class_zombiesub_reg(plugin_id, param_num)
         ArrayGetString(arrayClassZombieModel, ArrayFindValue(arrayClassZombieId, lParentClassId), lClassName, charsmax(lClassName))
 
     ArrayPushCell(arrayClassZombieSubParent, lParentClassId)
-    ArrayPushCell(arrayClassZombieId, lClassId)
-    ArrayPushString(arrayClassZombieName, lClassName)
-    ArrayPushString(arrayClassZombieDesc, lClassDesc)
+    ArrayPushCell(arrayClassZombieSubId, lClassId)
+    ArrayPushString(arrayClassZombieSubName, lClassName)
+    ArrayPushString(arrayClassZombieSubDesc, lClassDesc)
     ArrayPushString(arrayClassZombieSubClaw, lClassClaw)
-    ArrayPushString(arrayClassZombieModel, lClassModel)
+    ArrayPushString(arrayClassZombieSubModel, lClassModel)
     ArrayPushCell(arrayClassZombieSubBody, lClassBody)
     ArrayPushCell(arrayClassZombieSubHealth, lClassHealth)
     ArrayPushCell(arrayClassZombieSubSpeed, lClassSpeed)

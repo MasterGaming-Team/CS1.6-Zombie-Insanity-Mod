@@ -331,10 +331,7 @@ public menu_subzclasses_handle(id, key)
 
 menu_open_hclasses(id, mPage = 1)
 {
-    if(!is_user_connected(id))
-        return
-    
-    static menu[500], len
+    return
 }
 
 public native_menu_open_zclasses(plugin_id, param_num)
@@ -369,9 +366,9 @@ get_players_with_this_zclass(classId)
 {
     new lCount
 
-    for(new i = 1; i <= gMaxPlayers, i++)
+    for(new i = 1; i <= gMaxPlayers; i++)
     {
-        if(!is_user_connected(id))
+        if(!is_user_connected(i))
             continue
         
         if(zi_core_client_zombie_get(i, true) == classId)
