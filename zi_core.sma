@@ -72,6 +72,7 @@ new gUserClassZombie[33]
 new gUserClassZombieSub[33]
 new gUserClassHuman[33]
 
+new gGamemodeModeCount[5]
 new gGamemodeCurrent
 new gGamemodeNext
 
@@ -104,7 +105,7 @@ public plugin_init()
     gForwardUserLast = CreateMultiForward("zi_fw_client_last", ET_CONTINUE, FP_CELL, FP_CELL)
 
     gForwardUserInfect = CreateMultiForward("zi_fw_client_infect", ET_CONTINUE, FP_CELL, FP_CELL, FP_CELL)
-    gForwardUserCure = CreateMultiForward("zi_fw_client_cure", ET_CONTINUE, FP_CELL, FP_CELL)
+    gForwardUserCure = CreateMultiForward("zi_fw_client_cure", ET_CONTINUE, FP_CELL, FP_CELL, FP_CELL)
     gForwardUserHeroisate = CreateMultiForward("zi_fw_client_heroisate", ET_CONTINUE, FP_CELL, FP_CELL)
 
     gForwardGamemodeChosen = CreateMultiForward("zi_fw_gamemode_chosen", ET_CONTINUE, FP_CELL)
@@ -225,12 +226,12 @@ public sql_class_load_handle(FailState, Handle:Query, error[], errorcode, data[]
 	{
         new lSqlText[120], len
 		
-        formatex(lSqlText, charsmax(lSqlText), "INSERT INTO classes ")
+        len = formatex(lSqlText, charsmax(lSqlText), "INSERT INTO classes ")
         len += formatex(lSqlText[len], charsmax(lSqlText) - len, "(accountId, ZClass, ZSubClass, HClass) ")
-        len += formatex(lSqlText[len], charsmax(lSqlText) - len, "VALUE ")
+        len += formatex(lSqlText[len], charsmax(lSqlText) - len, "VALUES ")
         len += formatex(lSqlText[len], charsmax(lSqlText) - len, "(^"%d^", ^"%d^", ^"%d^", ^"%d^");",
                     accountId, gUserClassZombieNext[id], gUserClassZombieSubNext[id], gUserClassHumanNext[id])
-        SQL_ThreadQuery(gSqlClassTuple, "sql_class_load_handle", lSqlText)
+        SQL_ThreadQuery(gSqlClassTuple, "sql_class_create_handle", lSqlText)
 
         mg_reg_user_sqlload_finished(id, MG_SQLID_ZICLASSES)
         return
@@ -329,8 +330,11 @@ public native_arrayid_zombiesub_get(plugin_id, param_num)
         set_param_byref(2, int:arrayClassZombieSubId)
     
     if(get_param(3) != -1)
-        set_param_byref(3, int:arrayClassZombieSubName)
-    
+    {
+        set_param_byref(3, 131)
+        console_print(0, "INCORE: %d", get_param(3))
+    }
+
     if(get_param(4) != -1)
         set_param_byref(4, int:arrayClassZombieSubDesc)
 
@@ -430,6 +434,8 @@ public native_gamemode_reg(plugin_id, param_num)
     ArrayPushCell(arrayGamemodeAllowShield, lGamemodeAllowShield)
     ArrayPushCell(arrayGamemodeAllowInfect, lGamemodeAllowInfect)
     ArrayPushCell(arrayGamemodeAllowRespawn, lGamemodeAllowRespawn)
+
+    gGamemodeModeCount[lGamemodeType]++
 
     return lGamemodeId
 }
@@ -561,7 +567,10 @@ public native_class_zombie_arrayslot_get(plugin_id, param_num)
     new lArrayId = ArrayFindValue(arrayClassZombieId, lClassId)
 
     if(lArrayId == -1)
+    {
         log_amx("[CLASSZOMBIEARRAYSLOTGET] Class is not found! (%d)", lClassId)
+        return ArrayFindValue(arrayClassZombieId, ZI_ZMCLASS_DEFAULT)
+    }
 
     return lArrayId
 }
@@ -572,7 +581,10 @@ public native_class_zombiesub_arrayslot_get(plugin_id, param_num)
     new lArrayId = ArrayFindValue(arrayClassZombieSubId, lClassId)
 
     if(lArrayId == -1)
+    {
         log_amx("[CLASSZOMBIESUBARRAYSLOTGET] Class is not found! (%d)", lClassId)
+        return ArrayFindValue(arrayClassZombieSubId, ZI_ZMSUBCLASS_DEFAULT)
+    }
 
     return lArrayId
 }
@@ -583,7 +595,10 @@ public native_class_human_arrayslot_get(plugin_id, param_num)
     new lArrayId = ArrayFindValue(arrayClassHumanId, lClassId)
 
     if(lArrayId == -1)
+    {
         log_amx("[CLASSHUMANARRAYSLOTGET] Class is not found! (%d)", lClassId)
+        return ArrayFindValue(arrayClassHumanId, ZI_HMCLASS_DEFAULT)
+    }
 
     return lArrayId
 }
@@ -945,7 +960,7 @@ getRandomGamemode(type = ZI_GMTYPE_NONE, modeBefore = -1)
             {
                 lGamemodeId = ArrayGetCell(arrayGamemodeId, i)
 
-                if(lGamemodeId == modeBefore && lArraySize > 1)
+                if(lGamemodeId == modeBefore && gGamemodeModeCount[type] > 1)
                     continue
 
                 if(ArrayGetCell(arrayGamemodeType, i) == ZI_GMTYPE_NORMAL)
@@ -958,7 +973,7 @@ getRandomGamemode(type = ZI_GMTYPE_NONE, modeBefore = -1)
             {
                 lGamemodeId = ArrayGetCell(arrayGamemodeId, i)
 
-                if(lGamemodeId == modeBefore && lArraySize > 1)
+                if(lGamemodeId == modeBefore && gGamemodeModeCount[type] > 1)
                     continue
 
                 if(ArrayGetCell(arrayGamemodeType, i) == ZI_GMTYPE_MULTIPLE)
@@ -971,7 +986,7 @@ getRandomGamemode(type = ZI_GMTYPE_NONE, modeBefore = -1)
             {
                 lGamemodeId = ArrayGetCell(arrayGamemodeId, i)
 
-                if(lGamemodeId == modeBefore && lArraySize > 1)
+                if(lGamemodeId == modeBefore && gGamemodeModeCount[type] > 1)
                     continue
 
                 if(ArrayGetCell(arrayGamemodeType, i) == ZI_GMTYPE_HERO)
@@ -984,7 +999,7 @@ getRandomGamemode(type = ZI_GMTYPE_NONE, modeBefore = -1)
             {
                 lGamemodeId = ArrayGetCell(arrayGamemodeId, i)
 
-                if(lGamemodeId == modeBefore && lArraySize > 1)
+                if(lGamemodeId == modeBefore && gGamemodeModeCount[type] > 1)
                     continue
 
                 if(ArrayGetCell(arrayGamemodeType, i) == ZI_GMTYPE_ARMAGEDDON)
@@ -997,7 +1012,7 @@ getRandomGamemode(type = ZI_GMTYPE_NONE, modeBefore = -1)
             {
                 lGamemodeId = ArrayGetCell(arrayGamemodeId, i)
 
-                if(lGamemodeId == modeBefore && lArraySize > 1)
+                if(lGamemodeId == modeBefore && gGamemodeModeCount[type] > 1)
                     continue
                 
                 ArrayPushCell(lArrayGamemodeList, lGamemodeId)
@@ -1005,7 +1020,7 @@ getRandomGamemode(type = ZI_GMTYPE_NONE, modeBefore = -1)
         }
     }
 
-    new lRandomId = ArrayGetCell(lArrayGamemodeList, random(ArraySize(lArrayGamemodeList)-1))
+    new lRandomId = ArrayGetCell(lArrayGamemodeList, random_num(0, ArraySize(lArrayGamemodeList)-1))
     ArrayDestroy(lArrayGamemodeList)
 
     return lRandomId
@@ -1016,6 +1031,12 @@ infectPlayer(victim, attacker, zombieClass, subClass)
     if(!is_user_alive(victim))
         return false
     
+    if(zombieClass == ZI_CLASS_NONE || subClass == ZI_CLASS_NONE)
+    {
+        zombieClass = ZI_ZMCLASS_DEFAULT
+        subClass = ZI_ZMSUBCLASS_DEFAULT
+    }
+
     new lArrayId = ArrayFindValue(arrayClassZombieSubId, subClass)
 
     if(lArrayId == -1)
@@ -1027,12 +1048,6 @@ infectPlayer(victim, attacker, zombieClass, subClass)
     if(gGamemodeCurrent)
     {
         cs_set_user_team(victim, CS_TEAM_T)
-    }
-
-    if(zombieClass == ZI_CLASS_NONE || subClass == ZI_CLASS_NONE)
-    {
-        zombieClass = ZI_ZMCLASS_NORMAL
-        subClass = ZI_ZMSUBCLASS_NORMAL1
     }
 
     gUserClassZombie[victim] = zombieClass
@@ -1061,6 +1076,9 @@ curePlayer(victim, attacker, humanClass)
     if(!is_user_alive(victim))
         return false
     
+    if(humanClass == ZI_CLASS_NONE)
+        humanClass = ZI_HMCLASS_DEFAULT
+
     new lArrayId = ArrayFindValue(arrayClassHumanId, humanClass)
 
     if(lArrayId == -1)
@@ -1073,9 +1091,6 @@ curePlayer(victim, attacker, humanClass)
     {
         cs_set_user_team(victim, CS_TEAM_CT)
     }
-    
-    if(humanClass == ZI_CLASS_NONE)
-        humanClass = ZI_HMCLASS_NORMAL
 
     gUserClassZombie[victim] = ZI_CLASS_NONE
     gUserClassZombieSub[victim] = ZI_CLASS_NONE
