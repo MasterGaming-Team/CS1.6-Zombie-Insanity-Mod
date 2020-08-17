@@ -248,7 +248,9 @@ public sql_class_load_handle(FailState, Handle:Query, error[], errorcode, data[]
         return
 	}
 
-    new lClassZombieId, lClassZombieSubId, lClassHumanId
+    new lClassZombieId
+    new lClassZombieSubId
+    new lClassHumanId
 
     lClassZombieId = SQL_ReadResult(Query, SQL_FieldNameToNum(Query, "ZClass"))
     lClassZombieSubId = SQL_ReadResult(Query, SQL_FieldNameToNum(Query, "ZSubClass"))
@@ -282,6 +284,56 @@ public sql_class_create_handle(FailState, Handle:Query, error[], errorcode, data
 }
 
 public sql_class_save_handle(FailState, Handle:Query, error[], errorcode, data[], datasize, Float:fQueueTime)
+{
+    if(FailState == TQUERY_CONNECT_FAILED || FailState == TQUERY_QUERY_FAILED)
+	{
+        log_amx("%s", error)
+        return
+	}
+}
+
+public sql_ammo_load_handle(FailState, Handle:Query, error[], errorcode, data[], datasize, Float:fQueueTime)
+{
+    new id = data[0]
+    new accountId = data[1]
+
+    if(FailState == TQUERY_CONNECT_FAILED || FailState == TQUERY_QUERY_FAILED)
+	{
+        log_amx("%s", error)
+        mg_reg_user_sqlload_finished(id, MG_SQLID_AMMO)
+        return
+	}
+
+    if(SQL_NumRows(Query) < 1)
+    {
+        new lSqlText[120], len
+		
+        len = formatex(lSqlText, charsmax(lSqlText), "INSERT INTO bank ")
+        len += formatex(lSqlText[len], charsmax(lSqlText) - len, "(accountId, bankLimit, ammo) ")
+        len += formatex(lSqlText[len], charsmax(lSqlText) - len, "VALUES ")
+        len += formatex(lSqlText[len], charsmax(lSqlText) - len, "(^"%d^", ^"%d^", ^"%d^");", accountId, gUserBankLimit[id], gUserAmmo[id])
+        SQL_ThreadQuery(gSqlClassTuple, "sql_ammo_create_handle", lSqlText)
+
+        mg_reg_user_sqlload_finished(id, MG_SQLID_AMMO)
+        return
+    }
+
+    gUserBankLimit[id] = SQL_ReadResult(Query, SQL_FieldNameToNum(Query, "bankLimit"))
+    gUserAmmo[id] = SQL_ReadResult(Query, SQL_FieldNameToNum(Query, "ammo"))
+
+    mg_reg_user_sqlload_finished(id, MG_SQLID_AMMO)
+}
+
+public sql_ammo_create_handle(FailState, Handle:Query, error[], errorcode, data[], datasize, Float:fQueueTime)
+{
+    if(FailState == TQUERY_CONNECT_FAILED || FailState == TQUERY_QUERY_FAILED)
+	{
+        log_amx("%s", error)
+        return
+	}
+}
+
+public sql_ammo_save_handle(FailState, Handle:Query, error[], errorcode, data[], datasize, Float:fQueueTime)
 {
     if(FailState == TQUERY_CONNECT_FAILED || FailState == TQUERY_QUERY_FAILED)
 	{
@@ -841,18 +893,33 @@ public mg_fw_client_login_process(id, accountId)
     data[1] = accountId
 
     mg_reg_user_sqlload_start(id, MG_SQLID_ZICLASSES)
+    mg_reg_user_sqlload_start(id, MG_SQLID_AMMO)
 
     formatex(lSqlTxt, charsmax(lSqlTxt), "SELECT * FROM classes WHERE accountId = ^"%d^";", accountId)
     SQL_ThreadQuery(gSqlClassTuple, "sql_class_load_handle", lSqlTxt, data, sizeof(data))
+
+    lSqlTxt[0] = EOS
+
+    formatex(lSqlTxt, charsmax(lSqlTxt), "SELECT * FROM bank WHERE accountId = ^"%d^";", accountId)
+    SQL_ThreadQuery(gSqlClassTuple, "sql_ammo_load_handle", lSqlTxt, data, sizeof(data))
 
     return PLUGIN_HANDLED
 }
 
 public mg_fw_client_sql_save(id, accountId, saveType)
 {
+    new lSqlText[120], len
+
+    len += formatex(lSqlText[len], charsmax(lSqlText) - len, "UPDATE bank SET")
+    len += formatex(lSqlText[len], charsmax(lSqlText) - len, " bankLimit = ^"%d^", ammo = ^"%d^"",
+                    gUserBankLimit[id], gUserAmmo[id])
+    len += formatex(lSqlText[len], charsmax(lSqlText) - len, " WHERE accountId=^"%d^";", accountId)
+    SQL_ThreadQuery(gSqlClassTuple, "sql_ammo_save_handle", lSqlText)
+
     if(saveType == SQL_SAVETYPE_LOGOUT)
     {
-        new lSqlText[120], len
+        lSqlText[0] = EOS
+        len = 0
 
         len += formatex(lSqlText[len], charsmax(lSqlText) - len, "UPDATE classes SET")
         len += formatex(lSqlText[len], charsmax(lSqlText) - len, " ZClass = ^"%d^", ZSubClass = ^"%d^", HClass = ^"%d^"",
