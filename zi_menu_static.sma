@@ -35,6 +35,7 @@ public plugin_init()
 	register_menu("MS Main Menu", KEYSMENU, "menu_main_handle")
 	register_menu("MS Weapons Menu", KEYSMENU, "menu_weapons_handle")
 	register_menu("MS Missions Menu", KEYSMENU, "menu_missions_handle")
+	register_menu("MS Settings Menu", KEYSMENU, "menu_settings_handle")
 	register_menu("MS Spectator Menu", KEYSMENU, "menu_spectator_handle")
 
 	zi_core_arrayid_zombiesub_get(_, _, int:arrayClassZombieSubName)
@@ -82,26 +83,26 @@ public menu_main_open(id)
 	ArrayGetString(arrayClassZombieSubName, zi_core_class_zombiesub_arrayslot_get(zi_core_client_zombie_get(id, true)), lClassZombieSubName, charsmax(lClassZombieSubName))
 	ArrayGetString(arrayClassHumanName, zi_core_class_human_arrayslot_get(zi_core_client_human_get(id, true)), lClassHumanName, charsmax(lClassHumanName))
 	
-	len = mg_core_menu_title_create(id, "MS TITLE_MAIN", menu, charsmax(menu), true)
+	len = mg_core_menu_title_create(id, "MS_TITLE_MAIN", menu, charsmax(menu), true)
 	len += formatex(menu[len], charsmax(menu)-len, "^n")
-	len += formatex(menu[len], charsmax(menu)-len, "\r1. \w%L^n", id, "MS MENU_MAIN1", id, "WEAPONNAME") // Elsődleges fegyvernév lekérése
-	len += formatex(menu[len], charsmax(menu)-len, "\r2. \w%L^n", id, "MS MENU_MAIN2", id, lClassZombieSubName)
-	len += formatex(menu[len], charsmax(menu)-len, "\r3. \w%L^n", id, "MS MENU_MAIN3", id, lClassHumanName)
-	len += formatex(menu[len], charsmax(menu)-len, "\r4. \w%L^n", id, "MS MENU_MAIN4", id) // Ammo lekérése
+	len += formatex(menu[len], charsmax(menu)-len, "\r1. \w%L^n", id, "MS_MENU_MAIN1", id, "WEAPONNAME") // Elsődleges fegyvernév lekérése
+	len += formatex(menu[len], charsmax(menu)-len, "\r2. \w%L^n", id, "MS_MENU_MAIN2", id, lClassZombieSubName)
+	len += formatex(menu[len], charsmax(menu)-len, "\r3. \w%L^n", id, "MS_MENU_MAIN3", id, lClassHumanName)
+	len += formatex(menu[len], charsmax(menu)-len, "\r4. \w%L^n", id, "MS_MENU_MAIN4", id) // Ammo lekérése
 	len += formatex(menu[len], charsmax(menu)-len, "^n")
-	len += formatex(menu[len], charsmax(menu)-len, "\r5. \w%L^n", id, "MS MENU_MAIN5") // *Áruház*
-	len += formatex(menu[len], charsmax(menu)-len, "\r6. \w%L^n", id, "MS MENU_MAIN6") // *VIP Menü*
+	len += formatex(menu[len], charsmax(menu)-len, "\r5. \w%L^n", id, "MS_MENU_MAIN5") // *Áruház*
+	len += formatex(menu[len], charsmax(menu)-len, "\r6. \w%L^n", id, "MS_MENU_MAIN6") // *VIP Menü*
 	len += formatex(menu[len], charsmax(menu)-len, "^n")
-	len += formatex(menu[len], charsmax(menu)-len, "\r7. \w%L^n", id, "MS MENU_MAIN7") // Beállítások
+	len += formatex(menu[len], charsmax(menu)-len, "\r7. \w%L^n", id, "MS_MENU_MAIN7") // Beállítások
 	
 	if(mg_reg_user_loggedin(id))
-		len += formatex(menu[len], charsmax(menu)-len, "\r8. \w%L^n", id, "MS MENU_MAIN8LOGGEDIN") // Felhasználó menü
+		len += formatex(menu[len], charsmax(menu)-len, "\r8. \w%L^n", id, "MS_MENU_MAIN8LOGGEDIN") // Felhasználó menü
 	else
-		len += formatex(menu[len], charsmax(menu)-len, "\r8. \w%L^n", id, "MS MENU_MAIN8REGISTER") // Reg menü
+		len += formatex(menu[len], charsmax(menu)-len, "\r8. \w%L^n", id, "MS_MENU_MAIN8REGISTER") // Reg menü
 	
-	len += formatex(menu[len], charsmax(menu)-len, "\r9. \w%L^n", id, "MS MENU_MAIN9") // Nyelvválasztás
+	len += formatex(menu[len], charsmax(menu)-len, "\r9. \w%L^n", id, "MS_MENU_MAIN9") // Nyelvválasztás
 	len += formatex(menu[len], charsmax(menu)-len, "^n")
-	len += formatex(menu[len], charsmax(menu)-len, "^n0. \w%L", id, "MS MENU_EXIT")
+	len += formatex(menu[len], charsmax(menu)-len, "\r0. \w%L", id, "MS_MENU_EXIT")
 
 	// Fix for AMXX custom menus
 	set_pdata_int(id, OFFSET_CSMENUCODE, 0)
@@ -163,16 +164,16 @@ public menu_weapons_open(id)
 	menu[0] = EOS
 	len = 0
 
-	len = mg_core_menu_title_create(id, "MS TITLE_WEAPONS", menu, charsmax(menu))
+	len = mg_core_menu_title_create(id, "MS_TITLE_WEAPONS", menu, charsmax(menu))
 	len += formatex(menu[len], charsmax(menu)-len, "^n")
-	len += formatex(menu[len], charsmax(menu)-len, "\r1. \w%L^n", id, "MS MENU_WEAPONS1") // Elsődleges fegyver lekérése
-	len += formatex(menu[len], charsmax(menu)-len, "\r2. \w%L^n", id, "MS MENU_WEAPONS2") // Másodlagos fegyver lekérése
-	len += formatex(menu[len], charsmax(menu)-len, "\r3. \w%L^n", id, "MS MENU_WEAPONS3") // Kés lekérése
+	len += formatex(menu[len], charsmax(menu)-len, "\r1. \w%L^n", id, "MS_MENU_WEAPONS1") // Elsődleges fegyver lekérése
+	len += formatex(menu[len], charsmax(menu)-len, "\r2. \w%L^n", id, "MS_MENU_WEAPONS2") // Másodlagos fegyver lekérése
+	len += formatex(menu[len], charsmax(menu)-len, "\r3. \w%L^n", id, "MS_MENU_WEAPONS3") // Kés lekérése
 	len += formatex(menu[len], charsmax(menu)-len, "^n")
-	len += formatex(menu[len], charsmax(menu)-len, "\r4. \w%L^n", id, "MS MENU_WEAPONS4") // Támadó gránát lekérése
-	len += formatex(menu[len], charsmax(menu)-len, "\r5. \w%L^n", id, "MS MENU_WEAPONS5") // Támogató gránát lekérése
+	len += formatex(menu[len], charsmax(menu)-len, "\r4. \w%L^n", id, "MS_MENU_WEAPONS4") // Támadó gránát lekérése
+	len += formatex(menu[len], charsmax(menu)-len, "\r5. \w%L^n", id, "MS_MENU_WEAPONS5") // Támogató gránát lekérése
 	len += formatex(menu[len], charsmax(menu)-len, "^n")
-	len += formatex(menu[len], charsmax(menu)-len, "\r0. \w%L", id, "MS MENU_EXIT")
+	len += formatex(menu[len], charsmax(menu)-len, "\r0. \w%L", id, "MS_MENU_EXIT")
 
 	// Fix for AMXX custom menus
 	set_pdata_int(id, OFFSET_CSMENUCODE, 0)
@@ -219,14 +220,14 @@ public menu_missions_open(id)
 	menu[0] = EOS
 	len = 0
 
-	len = mg_core_menu_title_create(id, "MS TITLE_MISSIONS", menu, charsmax(menu))
+	len = mg_core_menu_title_create(id, "MS_TITLE_MISSIONS", menu, charsmax(menu))
 	len += formatex(menu[len], charsmax(menu)-len, "^n")
-	len += formatex(menu[len], charsmax(menu)-len, "\r1. \w%L^n", id, "MS MENU_MISSIONS1") // Napi küldetések lekérése
-	len += formatex(menu[len], charsmax(menu)-len, "\r2. \w%L^n", id, "MS MENU_MISSIONS2") // Heti küldetések lekérése
+	len += formatex(menu[len], charsmax(menu)-len, "\r1. \w%L^n", id, "MS_MENU_MISSIONS1") // Napi küldetések lekérése
+	len += formatex(menu[len], charsmax(menu)-len, "\r2. \w%L^n", id, "MS_MENU_MISSIONS2") // Heti küldetések lekérése
 	len += formatex(menu[len], charsmax(menu)-len, "^n")
-	len += formatex(menu[len], charsmax(menu)-len, "\r3. \w%L^n", id, "MS MENU_MISSIONS3") // Örök küldetések lekérése
+	len += formatex(menu[len], charsmax(menu)-len, "\r3. \w%L^n", id, "MS_MENU_MISSIONS3") // Örök küldetések lekérése
 	len += formatex(menu[len], charsmax(menu)-len, "^n")
-	len += formatex(menu[len], charsmax(menu)-len, "\r0. \w%L", id, "MS MENU_EXIT")
+	len += formatex(menu[len], charsmax(menu)-len, "\r0. \w%L", id, "MS_MENU_EXIT")
 
 	// Fix for AMXX custom menus
 	set_pdata_int(id, OFFSET_CSMENUCODE, 0)
@@ -264,23 +265,23 @@ public menu_settings_open(id)
 	len = 0
 	lUserTeam = cs_get_user_team(id)
 
-	len = mg_core_menu_title_create(id, "MS TITLE_SETTINGS", menu, charsmax(menu))
+	len = mg_core_menu_title_create(id, "MS_TITLE_SETTINGS", menu, charsmax(menu))
 	len += formatex(menu[len], charsmax(menu)-len, "^n")
-	len += formatex(menu[len], charsmax(menu)-len, "\r1. \w%L^n", id, "MS MENU_SETTINGS1") // Effektek [FPS]
-	len += formatex(menu[len], charsmax(menu)-len, "\r2. \w%L^n", id, "MS MENU_SETTINGS2") // Személyre Szabás
-	len += formatex(menu[len], charsmax(menu)-len, "\r3. \w%L^n", id, "MS MENU_SETTINGS3") // Tiltások [némítás pl.]
+	len += formatex(menu[len], charsmax(menu)-len, "\r1. \w%L^n", id, "MS_MENU_SETTINGS1") // Effektek [FPS]
+	len += formatex(menu[len], charsmax(menu)-len, "\r2. \w%L^n", id, "MS_MENU_SETTINGS2") // Személyre Szabás
+	len += formatex(menu[len], charsmax(menu)-len, "\r3. \w%L^n", id, "MS_MENU_SETTINGS3") // Tiltások [némítás pl.]
 	len += formatex(menu[len], charsmax(menu)-len, "^n")
-	len += formatex(menu[len], charsmax(menu)-len, "\r4. \w%L^n", id, "MS MENU_SETTINGS4") // Prefix[Jelenlegi prefix lekérése]
+	len += formatex(menu[len], charsmax(menu)-len, "\r4. \w%L^n", id, "MS_MENU_SETTINGS4") // Prefix[Jelenlegi prefix lekérése]
 	// Megnézni, hogy a játékos admin-e
-	len += formatex(menu[len], charsmax(menu)-len, "\r5. \w%L^n", id, "MS MENU_SETTINGS5") // Admin menü
+	len += formatex(menu[len], charsmax(menu)-len, "\r5. \w%L^n", id, "MS_MENU_SETTINGS5") // Admin menü
 
 	if(lUserTeam == CS_TEAM_SPECTATOR)
-		len += formatex(menu[len], charsmax(menu)-len, "\r6. \w%L^n", id, "MS MENU_SETTINGS6SPECTATOR") // Nezőbe állás
+		len += formatex(menu[len], charsmax(menu)-len, "\r6. \w%L^n", id, "MS_MENU_SETTINGS6SPECTATOR") // Nezőbe állás
 	else if(lUserTeam == CS_TEAM_T || lUserTeam == CS_TEAM_CT)
-		len += formatex(menu[len], charsmax(menu)-len, "\r6. \w%L^n", id, "MS MENU_SETTINGS6PLAYING") // Játékba állás
+		len += formatex(menu[len], charsmax(menu)-len, "\r6. \w%L^n", id, "MS_MENU_SETTINGS6PLAYING") // Játékba állás
 	
 	len += formatex(menu[len], charsmax(menu)-len, "^n")
-	len += formatex(menu[len], charsmax(menu)-len, "\r0. \w%L", id, "MS MENU_EXIT")
+	len += formatex(menu[len], charsmax(menu)-len, "\r0. \w%L", id, "MS_MENU_EXIT")
 
 	// Fix for AMXX custom menus
 	set_pdata_int(id, OFFSET_CSMENUCODE, 0)
@@ -348,14 +349,14 @@ public menu_spectator_open(id)
 	menu[0] = EOS
 	len = 0
 
-	len = mg_core_menu_title_create(id, "MS TITLE_SPECTATOR", menu, charsmax(menu))
+	len = mg_core_menu_title_create(id, "MS_TITLE_SPECTATOR", menu, charsmax(menu))
 	len += formatex(menu[len], charsmax(menu)-len, "^n")
-	len += formatex(menu[len], charsmax(menu)-len, "\r%L^n", id, "MS MENU_SPECTATOR0")
+	len += formatex(menu[len], charsmax(menu)-len, "\r%L^n", id, "MS_MENU_SPECTATOR0")
 	len += formatex(menu[len], charsmax(menu)-len, "^n")
-	len += formatex(menu[len], charsmax(menu)-len, "\r1. \w%L^n", id, "MS MENU_SPECTATOR1")
-	len += formatex(menu[len], charsmax(menu)-len, "\r2. \w%L^n", id, "MS MENU_SPECTATOR2")
+	len += formatex(menu[len], charsmax(menu)-len, "\r1. \w%L^n", id, "MS_MENU_SPECTATOR1")
+	len += formatex(menu[len], charsmax(menu)-len, "\r2. \w%L^n", id, "MS_MENU_SPECTATOR2")
 	len += formatex(menu[len], charsmax(menu)-len, "^n")
-	len += formatex(menu[len], charsmax(menu)-len, "\r0. \w%L", id, "MS MENU_EXIT")
+	len += formatex(menu[len], charsmax(menu)-len, "\r0. \w%L", id, "MS_MENU_EXIT")
 
 	// Fix for AMXX custom menus
 	set_pdata_int(id, OFFSET_CSMENUCODE, 0)
