@@ -16,6 +16,8 @@
 #define VERSION "1.0"
 #define AUTHOR "Vieni"
 
+#define GLOBALBANKLIMIT     1000000 // 1milka
+
 #define TASKGAMEMODESTART   1
 
 #define flag_get(%1,%2) %1 & ((1 << (%2 & 31)))
@@ -71,6 +73,8 @@ new gUserClassHero[33]
 new gUserClassZombie[33]
 new gUserClassZombieSub[33]
 new gUserClassHuman[33]
+new gUserBankLimit[33]
+new gUserAmmo[33]
 
 new gGamemodeModeCount[5]
 new gGamemodeCurrent
@@ -186,9 +190,16 @@ public plugin_natives()
     register_native("zi_core_client_zombiesub_get", "native_client_zombiesub_get")
     register_native("zi_core_client_human_get", "native_client_human_get")
     register_native("zi_core_client_hero_get", "native_client_hero_get")
+    register_native("zi_core_client_ammo_get", "native_client_ammo_get")
+    register_native("zi_core_client_banklimit_get", "native_client_banklimit_get")
 
     register_native("zi_core_client_zombie_set", "native_client_zombie_set")
     register_native("zi_core_client_human_set", "native_client_human_set")
+    register_native("zi_core_client_ammo_set", "native_client_ammo_set")
+    register_native("zi_core_client_banklimit_set", "native_client_banklimit_set")
+
+    register_native("zi_core_client_ammo_add", "native_client_ammo_add")
+    register_native("zi_core_client_banklimit_add", "native_client_banklimit_add")
 
     register_native("zi_core_client_infect", "native_client_infect")
     register_native("zi_core_client_cure", "native_client_cure")
@@ -668,6 +679,24 @@ public native_client_hero_get(plugin_id, param_num)
     return getPlayerHero(id)
 }
 
+public native_client_ammo_get(plugin_id, param_num)
+{
+    static id
+    id = get_param(1)
+
+    if(mg_reg_user_loggedin(id))
+        return gUserAmmo[id]
+    
+    return 0
+}
+
+public native_client_banklimit_get(plugin_id, param_num)
+{
+    new id = get_param(id)
+
+    return gUserBankLimit[id]
+}
+
 public native_client_zombie_set(plugin_id, param_num)
 {
     static id, lClassId, lClassSubId, lCurrent
@@ -724,6 +753,52 @@ public native_client_human_set(plugin_id, param_num)
     }
 
     return curePlayer(id, id, lClassId)
+}
+
+public native_client_ammo_set(plugin_id, param_num)
+{
+    new id = get_param(1)
+    new lAmmoPacks = get_param(2)
+
+    gUserAmmo[id] = lAmmoPacks
+    
+    return true
+}
+
+public native_client_banklimit_set(plugin_id, param_num)
+{
+    new id = get_param(1)
+    new lBankLimit = get_param(2)
+
+    gUserBankLimit[id] = lBankLimit
+
+    return true
+}
+
+public native_client_ammo_add(plugin_id, param_num)
+{
+    static id
+    static lAmmoPacks
+    id = get_param(1)
+    lAmmoPacks = get_param(2)
+
+    if(lAmmoPacks + gUserAmmo[id] > gUserBankLimit[id])
+        return gUserAmmo[id] = gUserBankLimit[id]
+    
+    return gUserAmmo[id] += lAmmoPacks
+}
+
+public native_client_banklimit_add(plugin_id, param_num)
+{
+    static id
+    static lBankLimit
+    id = get_param(1)
+    lBankLimit = get_param(2)
+
+    if(lBankLimit + gUserBankLimit[id] > GLOBALBANKLIMIT)
+        return gUserBankLimit[id] = GLOBALBANKLIMIT
+
+    return gUserBankLimit[id] += lBankLimit
 }
 
 public native_client_infect(plugin_id, param_num)
