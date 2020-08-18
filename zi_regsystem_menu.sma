@@ -130,21 +130,21 @@ public menu_loggedin_open(id)
 	new menu[500], len
 
 	len = mg_core_menu_title_create(id, "MR_TITLE_LOGGEDIN", menu, charsmax(menu))
-	len += formatex(menu[len], charsmax(menu) - len, "^n")
+	len += formatex(menu[len], charsmax(menu)-len, "\y       - - - - - - - - - - ^n")
 	len += formatex(menu[len], charsmax(menu) - len, "\r1.\w %L^n", id, "MR_MENU_LOGGEDIN1")   // Raktár
 	len += formatex(menu[len], charsmax(menu) - len, "\r2.\w %L^n", id, "MR_MENU_LOGGEDIN2")   // Aktivált itemek
 	len += formatex(menu[len], charsmax(menu) - len, "\d3. %L \r%L^n", id, "MR_MENU_LOGGEDIN3", id, "MR_MENU_UNDERCONSTRUCTION")   // Klán menü
-	len += formatex(menu[len], charsmax(menu) - len, "^n")
+	len += formatex(menu[len], charsmax(menu)-len, "\y     ««¤===¤»»  ^n")
 	len += formatex(menu[len], charsmax(menu) - len, "\r4.\w %L^n", id, "MR_MENU_LOGGEDIN4")   // Küldetések[Napi/Heti/Örök]
-	len += formatex(menu[len], charsmax(menu) - len, "^n")
+	len += formatex(menu[len], charsmax(menu)-len, "\y     ««¤===¤»»  ^n")
 	len += formatex(menu[len], charsmax(menu) - len, "\r5.\w %L: %L^n", id, "MR_MENU_LOGGEDIN5", id, mg_reg_user_setting_get(id) ? "MR_MENU_SETTINGON":"MR_MENU_SETTINGOFF")
 	if(mg_reg_user_setting_get(id))
 	{
-		len += formatex(menu[len], charsmax(menu) - len, "\r  » 6.\w %L: %L^n", id, "MR_MENU_LOGGEDIN6", id, mg_reg_user_setting_get(id, MG_SETTING_AUTOLOGINAUTHID) ? "MR_MENU_SETTINGON":"MR_MENU_SETTINGOFF")
-		len += formatex(menu[len], charsmax(menu) - len, "\r  » 7.\w %L: %L^n", id, "MR_MENU_LOGGEDIN7", id, mg_reg_user_setting_get(id, MG_SETTING_AUTOLOGINNAME) ? "MR_MENU_SETTINGON":"MR_MENU_SETTINGOFF")
-		len += formatex(menu[len], charsmax(menu) - len, "\r  » 8.\w %L: %L^n", id, "MR_MENU_LOGGEDIN8", id, mg_reg_user_setting_get(id, MG_SETTING_AUTOLOGINSETINFO) ? "MR_MENU_SETTINGON":"MR_MENU_SETTINGOFF")
+		len += formatex(menu[len], charsmax(menu) - len, "  \y» \r6.\y %L\w: %L^n", id, "MR_MENU_LOGGEDIN6", id, mg_reg_user_setting_get(id, MG_SETTING_AUTOLOGINAUTHID) ? "MR_MENU_SETTINGON":"MR_MENU_SETTINGOFF")
+		len += formatex(menu[len], charsmax(menu) - len, "  \y» \r7.\y %L\w: %L^n", id, "MR_MENU_LOGGEDIN7", id, mg_reg_user_setting_get(id, MG_SETTING_AUTOLOGINNAME) ? "MR_MENU_SETTINGON":"MR_MENU_SETTINGOFF")
+		len += formatex(menu[len], charsmax(menu) - len, "  \y» \r8.\y %L\w: %L^n", id, "MR_MENU_LOGGEDIN8", id, mg_reg_user_setting_get(id, MG_SETTING_AUTOLOGINSETINFO) ? "MR_MENU_SETTINGON":"MR_MENU_SETTINGOFF")
 	}
-	len += formatex(menu[len], charsmax(menu) - len, "^n")
+	len += formatex(menu[len], charsmax(menu)-len, "\y     ««¤===¤»»  ^n")
 	len += formatex(menu[len], charsmax(menu) - len, "\r9.\w %L^n", id, "MR_MENU_LOGGEDIN9")   // Kijelentkezés
 	len += formatex(menu[len], charsmax(menu) - len, "^n")
 	len += formatex(menu[len], charsmax(menu) - len, "\r0.\w %L", id, "MR_MENU_BACKTOMAIN")
