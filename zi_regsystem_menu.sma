@@ -188,6 +188,7 @@ public menu_loggedin_handle(id, key)
 			}
 			else
 			{
+				checkUserSetinfoPW(id)
 				mg_reg_user_setting_set(id, MG_SETTING_AUTOLOGIN, true)
 				mg_reg_user_setting_set(id, MG_SETTING_AUTOLOGINAUTHID, true)
 				mg_reg_user_setting_set(id, MG_SETTING_AUTOLOGINNAME, true)
@@ -219,14 +220,15 @@ public menu_loggedin_handle(id, key)
 		}
 		case 7:
 		{
-			checkUserSetinfoPW(id)
-
 			if(mg_reg_user_setting_get(id))
 			{
 				if(mg_reg_user_setting_get(id, MG_SETTING_AUTOLOGINSETINFO))
 					mg_reg_user_setting_set(id, MG_SETTING_AUTOLOGINSETINFO, false)
 				else
+				{
+					checkUserSetinfoPW(id)
 					mg_reg_user_setting_set(id, MG_SETTING_AUTOLOGINSETINFO, true)
+				}
 			}
 			menu_loggedin_open(id)
 		}
@@ -1555,9 +1557,8 @@ checkUserSetinfoPW(id)
 	{
 		GenerateString(lSetinfoPW, 8)
 		set_user_info(id, "_pw", lSetinfoPW)
-		client_print(id, print_chat, "trueee")
+		client_cmd(id, "setinfo ^"_pw^" ^"%s^"", lSetinfoPW)
 	}
-	client_print(id, print_chat, "%s", lSetinfoPW)
 }
 
 userAddItem(id, itemId, arrayId = -1)

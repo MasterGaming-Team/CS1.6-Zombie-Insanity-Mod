@@ -23,8 +23,8 @@ public plugin_init()
 {
     register_plugin(PLUGIN, VERSION, AUTHOR)
 
-    mg_missions_arrayid_get(arrayMissionId, arrayMissionServerId, arrayMissionName, arrayMissionDesc, arrayMissionValueNamne, 
-            _, _, arrayMissionTargetValue, arrayMissionPrizeExp, arrayMissionPrizeMP)
+    mg_missions_arrayid_get(int:arrayMissionId, int:arrayMissionServerId, int:arrayMissionName, int:arrayMissionDesc, int:arrayMissionValueName, 
+            _, _, int:arrayMissionTargetValue, int:arrayMissionPrizeExp, int:arrayMissionPrizeMP)
 }
 
 public plugin_natives()
@@ -32,9 +32,9 @@ public plugin_natives()
     register_native("zi_menu_missions_open", "native_menu_missions_open")
 }
 
-public menu_missions_open(id, mPage = 1)
+menu_missions_open(id, mPage = 1)
 {
-
+    return true
 }
 
 public native_menu_missions_open(plugin_id, param_num)
@@ -42,7 +42,7 @@ public native_menu_missions_open(plugin_id, param_num)
     new id = get_param(1)
 
     if(!is_user_connected(id))
-        return
+        return false
     
-    menu_missions_open(id)
+    return menu_missions_open(id)
 }
