@@ -34,7 +34,6 @@ public plugin_init()
 
 	register_menu("MS Main Menu", KEYSMENU, "menu_main_handle")
 	register_menu("MS Weapons Menu", KEYSMENU, "menu_weapons_handle")
-	register_menu("MS Missions Menu", KEYSMENU, "menu_missions_handle")
 	register_menu("MS Settings Menu", KEYSMENU, "menu_settings_handle")
 	register_menu("MS Spectator Menu", KEYSMENU, "menu_spectator_handle")
 
@@ -85,10 +84,10 @@ public menu_main_open(id)
 	
 	len = mg_core_menu_title_create(id, "MS_TITLE_MAIN", menu, charsmax(menu), true)
 	len += formatex(menu[len], charsmax(menu)-len, "^n")
-	len += formatex(menu[len], charsmax(menu)-len, "\r1. \w%L^n", id, "MS_MENU_MAIN1", id, "WEAPONNAME") // Elsődleges fegyvernév lekérése
-	len += formatex(menu[len], charsmax(menu)-len, "\r2. \w%L^n", id, "MS_MENU_MAIN2", id, lClassZombieSubName)
-	len += formatex(menu[len], charsmax(menu)-len, "\r3. \w%L^n", id, "MS_MENU_MAIN3", id, lClassHumanName)
-	len += formatex(menu[len], charsmax(menu)-len, "\r4. \w%L^n", id, "MS_MENU_MAIN4", id) // Ammo lekérése
+	len += formatex(menu[len], charsmax(menu)-len, "\r1. \w%L^n", id, "MS_MENU_MAIN1", id, "WEAPONNAME") // Fegyverek
+	len += formatex(menu[len], charsmax(menu)-len, "\r2. \w%L^n", id, "MS_MENU_MAIN2", id, lClassZombieSubName) // Zombie kasztok
+	len += formatex(menu[len], charsmax(menu)-len, "\r3. \w%L^n", id, "MS_MENU_MAIN3", id, lClassHumanName) // Ember kasztok
+	len += formatex(menu[len], charsmax(menu)-len, "\r4. \w%L^n", id, "MS_MENU_MAIN4", zi_core_client_ammo_get(id)) // Extra cuccok
 	len += formatex(menu[len], charsmax(menu)-len, "^n")
 	len += formatex(menu[len], charsmax(menu)-len, "\r5. \w%L^n", id, "MS_MENU_MAIN5") // *Áruház*
 	len += formatex(menu[len], charsmax(menu)-len, "\r6. \w%L^n", id, "MS_MENU_MAIN6") // *VIP Menü*
@@ -145,7 +144,7 @@ public menu_main_handle(id, key)
 		}
 		case 7:
 		{
-			// Felhasználó/Regmenü megnyitása
+			mg_menu_reg_open(id)
 		}
 		case 8:
 		{
@@ -205,52 +204,6 @@ public menu_weapons_handle(id, key)
 		case 4:
 		{
 			// Támogató gránát menü megnyitása
-		}
-	}
-
-	return PLUGIN_HANDLED
-}
-
-public menu_missions_open(id)
-{
-	// Lekérni, hogy bevan-e lépve. Ha nem, ne nyissa meg a menüt.
-
-	static menu[500], len
-
-	menu[0] = EOS
-	len = 0
-
-	len = mg_core_menu_title_create(id, "MS_TITLE_MISSIONS", menu, charsmax(menu))
-	len += formatex(menu[len], charsmax(menu)-len, "^n")
-	len += formatex(menu[len], charsmax(menu)-len, "\r1. \w%L^n", id, "MS_MENU_MISSIONS1") // Napi küldetések lekérése
-	len += formatex(menu[len], charsmax(menu)-len, "\r2. \w%L^n", id, "MS_MENU_MISSIONS2") // Heti küldetések lekérése
-	len += formatex(menu[len], charsmax(menu)-len, "^n")
-	len += formatex(menu[len], charsmax(menu)-len, "\r3. \w%L^n", id, "MS_MENU_MISSIONS3") // Örök küldetések lekérése
-	len += formatex(menu[len], charsmax(menu)-len, "^n")
-	len += formatex(menu[len], charsmax(menu)-len, "\r0. \w%L", id, "MS_MENU_EXIT")
-
-	// Fix for AMXX custom menus
-	set_pdata_int(id, OFFSET_CSMENUCODE, 0)
-	show_menu(id, KEYSMENU, menu, -1, "MS Missions Menu")
-	
-	return PLUGIN_HANDLED
-}
-
-public menu_missions_handle(id, key)
-{
-	switch(key)
-	{
-		case 0:
-		{
-			// Megnyitni a napi küldetések menüt
-		}
-		case 1:
-		{
-			// Megnyitni a heti küldetések menüt
-		}
-		case 2:
-		{
-			// Megnyitni az örök küldetések menüt
 		}
 	}
 
