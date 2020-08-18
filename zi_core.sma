@@ -17,6 +17,8 @@
 #define AUTHOR "Vieni"
 
 #define GLOBALBANKLIMIT     1000000 // 1milka
+#define DEFAULTBANKLIMIT    10000
+#define STARTERAMMO         500
 
 #define TASKGAMEMODESTART   1
 
@@ -940,6 +942,8 @@ public mg_fw_client_clean(id)
     gUserClassZombie[id] = ZI_CLASS_NONE
     gUserClassZombieSub[id] = ZI_CLASS_NONE
     gUserClassHuman[id] = ZI_CLASS_NONE
+    gUserBankLimit[id] = DEFAULTBANKLIMIT
+    gUserAmmo[id] = STARTERAMMO
 }
 
 public mg_fw_round_start_post()
