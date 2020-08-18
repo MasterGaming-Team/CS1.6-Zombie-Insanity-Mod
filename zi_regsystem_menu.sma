@@ -109,6 +109,8 @@ public plugin_natives()
 	register_native("mg_reg_arrayid_item_get", "native_arrayid_item_get")
 	register_native("mg_reg_arrayid_useritem_get", "native_arrayid_useritem_get")
 
+	register_native("mg_item_client_give", "native_item_client_give")
+
 	register_native("mg_menu_reg_open", "native_reg_open")
 }
 
@@ -1137,14 +1139,14 @@ public sql_item_refresh_handle(FailState, Handle:Query, error[], errorcode, data
 
 public sql_item_add_handle(FailState, Handle:Query, error[], errorcode, data[], datasize, Float:fQueueTime)
 {
-    if(FailState == TQUERY_CONNECT_FAILED || FailState == TQUERY_QUERY_FAILED)
+	if(FailState == TQUERY_CONNECT_FAILED || FailState == TQUERY_QUERY_FAILED)
 	{
         log_amx("%s", error)
         return
 	}
 
 	new id = data[0]
-	new lItemArrayId = data[1]
+	// new lItemArrayId = data[1] NOT USED
 	new lItemId = data[2]
 	new lUserItemTime = data[3]
 	new lItemCategory = data[4]
@@ -1161,7 +1163,7 @@ public sql_item_add_handle(FailState, Handle:Query, error[], errorcode, data[], 
 	ArrayPushCell(arrayUserItemId[id], lItemId)
 	ArrayPushCell(arrayUserItemTime[id], lUserItemTime)
 	ArrayPushCell(arrayUserItemUsed[id], 0)
-	ArrayPushCell(arrayUserItemCategory[id], lItemcategory)
+	ArrayPushCell(arrayUserItemCategory[id], lItemCategory)
 
 	ExecuteForward(gForwardItemGiven, retValue, id, lItemId, lUserItemArrayId)
 }
@@ -1397,6 +1399,18 @@ public native_arrayid_useritem_get(plugin_id, param_num)
 
 	if(get_param(6) != -1)
 		set_param_byref(6, int:arrayUserItemCategory[id])
+}
+
+public native_item_client_give(plugin_id, param_num)
+{
+	new id = get_param(1)
+	new lItemId = get_param(2)
+	new lArrayId = get_param(3)
+
+	if(!mg_reg_user_loggedin(id))
+		return false
+
+	return userAddItem(id, lItemId, lArrayId)
 }
 
 public native_reg_open(plugin_id, param_num)
