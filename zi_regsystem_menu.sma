@@ -273,14 +273,8 @@ menu_storage_open(id, mPage = 1)
 
 	gMenuStorageNextPage[id] = getVisibleItems(id, arrayUserItemId[id], lUserItemArrayIdList, sizeof(lUserItemArrayIdList), mPage)
 
-	while(true)
+	while(lUserItemArrayIdList[0] == -1)
 	{
-		for(new i; i < sizeof(lUserItemArrayIdList); i++)
-		{
-			if(lUserItemArrayIdList[i] != -1)
-				goto endloop
-		}
-
 		mPage -= 1
 				
 		if(mPage <= 1)
@@ -291,7 +285,6 @@ menu_storage_open(id, mPage = 1)
 
 		gMenuStorageNextPage[id] = getVisibleItems(id, arrayUserItemId[id], lUserItemArrayIdList, sizeof(lUserItemArrayIdList), mPage)
 	}
-	endloop:
 
 	new pickId = 1
 	new lItemName[64]
@@ -334,7 +327,7 @@ menu_storage_open(id, mPage = 1)
 	else
 		len += formatex(menu[len], charsmax(menu) - len, "\r						8. \w%L^n", id, "MR_MENU_BACK")
 	
-	if(gMenuStorageNextPage[id])
+	if(!gMenuStorageNextPage[id])
 		len += formatex(menu[len], charsmax(menu) - len, "\d						9. %L^n", id, "MR_MENU_NEXT")
 	else
 		len += formatex(menu[len], charsmax(menu) - len, "\r						9. \w%L^n", id, "MR_MENU_NEXT")
@@ -572,14 +565,8 @@ menu_activeitemlist_open(id, mPage = 1)
 	
 	gMenuActiveItemsNextPage[id] = getActiveItems(id, arrayUserItemId[id], lUserItemArrayIdList, sizeof(lUserItemArrayIdList), mPage)
 
-	while(true)
+	while(lUserItemArrayIdList[0] == -1)
 	{
-		for(new i; i < sizeof(lUserItemArrayIdList); i++)
-		{
-			if(lUserItemArrayIdList[i] != -1)
-				goto endloop
-		}
-
 		mPage -= 1
 				
 		if(mPage <= 1)
@@ -588,9 +575,8 @@ menu_activeitemlist_open(id, mPage = 1)
 			break
 		}
 
-		gMenuActiveItemsNextPage[id] =  getActiveItems(id, arrayUserItemId[id], lUserItemArrayIdList, sizeof(lUserItemArrayIdList), mPage)
+		gMenuActiveItemsNextPage[id] = getActiveItems(id, arrayUserItemId[id], lUserItemArrayIdList, sizeof(lUserItemArrayIdList), mPage)
 	}
-	endloop:
 
 	new pickId = 1
 	new lItemName[64]
@@ -650,7 +636,7 @@ menu_activeitemlist_open(id, mPage = 1)
 	else
 		len += formatex(menu[len], charsmax(menu) - len, "\r						8. \w%L^n", id, "MR_MENU_BACK")
 		
-	if(gMenuActiveItemsNextPage[id])
+	if(!gMenuActiveItemsNextPage[id])
 		len += formatex(menu[len], charsmax(menu) - len, "\d						9. %L^n", id, "MR_MENU_NEXT")
 	else
 		len += formatex(menu[len], charsmax(menu) - len, "\r						9. \w%L^n", id, "MR_MENU_NEXT")
