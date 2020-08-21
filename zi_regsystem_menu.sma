@@ -277,20 +277,21 @@ menu_storage_open(id, mPage = 1)
 	{
 		for(new i; i < sizeof(lUserItemArrayIdList); i++)
 		{
-			if(lUserItemArrayIdList[i] == -1)
-				break
+			if(lUserItemArrayIdList[i] != -1)
+				goto endloop
 		}
 
 		mPage -= 1
 				
-		if(mPage < 1)
+		if(mPage <= 1)
 		{
-			menu_loggedin_open(id)
-			return false
+			mPage = 1
+			break
 		}
 
 		gMenuStorageNextPage[id] = getVisibleItems(id, arrayUserItemId[id], lUserItemArrayIdList, sizeof(lUserItemArrayIdList), mPage)
 	}
+	endloop:
 
 	new pickId = 1
 	new lItemName[64]
@@ -575,20 +576,21 @@ menu_activeitemlist_open(id, mPage = 1)
 	{
 		for(new i; i < sizeof(lUserItemArrayIdList); i++)
 		{
-			if(lUserItemArrayIdList[i] == -1)
-				break
+			if(lUserItemArrayIdList[i] != -1)
+				goto endloop
 		}
 
 		mPage -= 1
 				
-		if(mPage < 1)
+		if(mPage <= 1)
 		{
-			menu_loggedin_open(id)
-			return false
+			mPage = 1
+			break
 		}
 
 		gMenuActiveItemsNextPage[id] =  getActiveItems(id, arrayUserItemId[id], lUserItemArrayIdList, sizeof(lUserItemArrayIdList), mPage)
 	}
+	endloop:
 
 	new pickId = 1
 	new lItemName[64]
