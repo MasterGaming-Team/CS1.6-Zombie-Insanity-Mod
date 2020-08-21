@@ -45,12 +45,14 @@ new gEMail[33][MAX_EMAIL_LENGTH+1]
 
 new gMenuStoragePage[33]
 new gMenuStoragePicks[33][MENUITEM_IPP]
+new bool:gMenuStorageNextPage[33]
 
 new gMenuItemArrayId[33]
 
 new gMenuActiveItemsPage[33]
 new gMenuActiveItemsPicks[33][MENUACTIVEITEMS_IPP]
 new gMenuActiveItemsId
+new bool:gMenuActiveItemsNextPage[33]
 
 new gMenuActiveItemArrayId[33]
 
@@ -127,28 +129,27 @@ public menu_loggedin_open(id)
 	if(!is_user_connected(id) || !mg_reg_user_loggedin(id))
 		return false
 		
-	new menu[500], len
+	new menu[1024], len
 
 	len = mg_core_menu_title_create(id, "MR_TITLE_LOGGEDIN", menu, charsmax(menu))
-	len += formatex(menu[len], charsmax(menu)-len, "\y       - - - - - - - - - - ^n")
-	len += formatex(menu[len], charsmax(menu) - len, "\r1.\w %L^n", id, "MR_MENU_LOGGEDIN1")   // Raktár
-	len += formatex(menu[len], charsmax(menu) - len, "\r2.\w %L^n", id, "MR_MENU_LOGGEDIN2")   // Aktivált itemek
-	len += formatex(menu[len], charsmax(menu) - len, "\d3. %L \r%L^n", id, "MR_MENU_LOGGEDIN3", id, "MR_MENU_UNDERCONSTRUCTION")   // Klán menü
-	len += formatex(menu[len], charsmax(menu)-len, "\y     ««¤===¤»»  ^n")
-	len += formatex(menu[len], charsmax(menu) - len, "\r4.\w %L^n", id, "MR_MENU_LOGGEDIN4")   // Küldetések[Napi/Heti/Örök]
-	len += formatex(menu[len], charsmax(menu)-len, "\y     ««¤===¤»»  ^n")
-	len += formatex(menu[len], charsmax(menu) - len, "\r5.\w %L: %L^n", id, "MR_MENU_LOGGEDIN5", id, mg_reg_user_setting_get(id) ? "MR_MENU_SETTINGON":"MR_MENU_SETTINGOFF")
+	len += formatex(menu[len], charsmax(menu) - len, "\d					-		-		-		-		-		-^n")
+	len += formatex(menu[len], charsmax(menu) - len, "\r 1.\w %L^n", id, "MR_MENU_LOGGEDIN1")   // Raktár
+	len += formatex(menu[len], charsmax(menu) - len, "\r 2.\w %L^n", id, "MR_MENU_LOGGEDIN2")   // Aktivált itemek
+	len += formatex(menu[len], charsmax(menu) - len, "\d 3. %L \r%L^n", id, "MR_MENU_LOGGEDIN3", id, "MR_MENU_UNDERCONSTRUCTION")   // Klán menü
+	len += formatex(menu[len], charsmax(menu) - len, "\y				««¤===¤»»^n")
+	len += formatex(menu[len], charsmax(menu) - len, "\r 4.\w %L^n", id, "MR_MENU_LOGGEDIN4")   // Küldetések[Napi/Heti/Örök]
+	len += formatex(menu[len], charsmax(menu) - len, "\y				««¤===¤»»^n")
+	len += formatex(menu[len], charsmax(menu) - len, "\r 5.\w %L: %L^n", id, "MR_MENU_LOGGEDIN5", id, mg_reg_user_setting_get(id) ? "MR_MENU_SETTINGON":"MR_MENU_SETTINGOFF")
 	if(mg_reg_user_setting_get(id))
 	{
-		len += formatex(menu[len], charsmax(menu) - len, "  \y» \r6.\y %L\w: %L^n", id, "MR_MENU_LOGGEDIN6", id, mg_reg_user_setting_get(id, MG_SETTING_AUTOLOGINAUTHID) ? "MR_MENU_SETTINGON":"MR_MENU_SETTINGOFF")
-		len += formatex(menu[len], charsmax(menu) - len, "  \y» \r7.\y %L\w: %L^n", id, "MR_MENU_LOGGEDIN7", id, mg_reg_user_setting_get(id, MG_SETTING_AUTOLOGINNAME) ? "MR_MENU_SETTINGON":"MR_MENU_SETTINGOFF")
-		len += formatex(menu[len], charsmax(menu) - len, "  \y» \r8.\y %L\w: %L^n", id, "MR_MENU_LOGGEDIN8", id, mg_reg_user_setting_get(id, MG_SETTING_AUTOLOGINSETINFO) ? "MR_MENU_SETTINGON":"MR_MENU_SETTINGOFF")
+		len += formatex(menu[len], charsmax(menu) - len, "    \d» \r6.\d %L\w: %L^n", id, "MR_MENU_LOGGEDIN6", id, mg_reg_user_setting_get(id, MG_SETTING_AUTOLOGINAUTHID) ? "MR_MENU_SETTINGON":"MR_MENU_SETTINGOFF")
+		len += formatex(menu[len], charsmax(menu) - len, "    \d» \r7.\d %L\w: %L^n", id, "MR_MENU_LOGGEDIN7", id, mg_reg_user_setting_get(id, MG_SETTING_AUTOLOGINNAME) ? "MR_MENU_SETTINGON":"MR_MENU_SETTINGOFF")
+		len += formatex(menu[len], charsmax(menu) - len, "    \d» \r8.\d %L\w: %L^n", id, "MR_MENU_LOGGEDIN8", id, mg_reg_user_setting_get(id, MG_SETTING_AUTOLOGINSETINFO) ? "MR_MENU_SETTINGON":"MR_MENU_SETTINGOFF")
 	}
-	len += formatex(menu[len], charsmax(menu)-len, "\y     ««¤===¤»»  ^n")
-	len += formatex(menu[len], charsmax(menu) - len, "\r9.\w %L^n", id, "MR_MENU_LOGGEDIN9")   // Kijelentkezés
-	len += formatex(menu[len], charsmax(menu) - len, "^n")
-	len += formatex(menu[len], charsmax(menu) - len, "\r0.\w %L", id, "MR_MENU_BACKTOMAIN")
-
+	len += formatex(menu[len], charsmax(menu) - len, "\y				««¤===¤»»^n")
+	len += formatex(menu[len], charsmax(menu) - len, "\r 9.\w %L^n", id, "MR_MENU_LOGGEDIN9")   // Kijelentkezés
+	len += formatex(menu[len], charsmax(menu) - len, "\d					-		-		-		-		-		-^n")
+	len += formatex(menu[len], charsmax(menu) - len, "\r						0.\w %L", id, "MR_MENU_BACKTOMAIN")
 	// Fix for AMXX custom menus
 	set_pdata_int(id, OFFSET_CSMENUCODE, 0)
 	show_menu(id, KEYSMENU, menu, -1, "MR RegLoggedIn Menu")
@@ -201,7 +202,12 @@ public menu_loggedin_handle(id, key)
 			if(mg_reg_user_setting_get(id))
 			{
 				if(mg_reg_user_setting_get(id, MG_SETTING_AUTOLOGINAUTHID))
+				{
 					mg_reg_user_setting_set(id, MG_SETTING_AUTOLOGINAUTHID, false)
+
+					if(!mg_reg_user_setting_get(id, MG_SETTING_AUTOLOGINNAME) && !mg_reg_user_setting_get(id, MG_SETTING_AUTOLOGINSETINFO))
+						mg_reg_user_setting_set(id, MG_SETTING_AUTOLOGIN, false)
+				}
 				else
 					mg_reg_user_setting_set(id, MG_SETTING_AUTOLOGINAUTHID, true)
 			}
@@ -212,7 +218,12 @@ public menu_loggedin_handle(id, key)
 			if(mg_reg_user_setting_get(id))
 			{
 				if(mg_reg_user_setting_get(id, MG_SETTING_AUTOLOGINNAME))
+				{
 					mg_reg_user_setting_set(id, MG_SETTING_AUTOLOGINNAME, false)
+
+					if(!mg_reg_user_setting_get(id, MG_SETTING_AUTOLOGINAUTHID) && !mg_reg_user_setting_get(id, MG_SETTING_AUTOLOGINSETINFO))
+						mg_reg_user_setting_set(id, MG_SETTING_AUTOLOGIN, false)
+				}
 				else
 					mg_reg_user_setting_set(id, MG_SETTING_AUTOLOGINNAME, true)
 			}
@@ -223,7 +234,12 @@ public menu_loggedin_handle(id, key)
 			if(mg_reg_user_setting_get(id))
 			{
 				if(mg_reg_user_setting_get(id, MG_SETTING_AUTOLOGINSETINFO))
+				{
 					mg_reg_user_setting_set(id, MG_SETTING_AUTOLOGINSETINFO, false)
+				
+					if(!mg_reg_user_setting_get(id, MG_SETTING_AUTOLOGINAUTHID) && !mg_reg_user_setting_get(id, MG_SETTING_AUTOLOGINNAME))
+						mg_reg_user_setting_set(id, MG_SETTING_AUTOLOGIN, false)
+				}
 				else
 				{
 					checkUserSetinfoPW(id)
@@ -253,12 +269,18 @@ menu_storage_open(id, mPage = 1)
     
 	new menu[500]
 	new len
-	new lUserItemCount
+	new lUserItemArrayIdList[MENUITEM_IPP] = -1
 
-	lUserItemCount = ArraySize(arrayUserItemSortId[id])
+	gMenuStorageNextPage[id] = getVisibleItems(id, arrayUserItemId[id], lUserItemArrayIdList, sizeof(lUserItemArrayIdList), mPage)
 
-	while(lUserItemCount < mPage*MENUITEM_IPP-MENUITEM_IPP)
-    {
+	while(true)
+	{
+		for(new i; i < sizeof(lUserItemArrayIdList); i++)
+		{
+			if(lUserItemArrayIdList[i] == -1)
+				break
+		}
+
 		mPage -= 1
 				
 		if(mPage < 1)
@@ -266,22 +288,23 @@ menu_storage_open(id, mPage = 1)
 			menu_loggedin_open(id)
 			return false
 		}
+
+		gMenuStorageNextPage[id] = getVisibleItems(id, arrayUserItemId[id], lUserItemArrayIdList, sizeof(lUserItemArrayIdList), mPage)
 	}
 
 	new pickId = 1
 	new lItemName[64]
-
-	len = mg_core_menu_title_create(id, "MR_TITLE_STORAGE", menu, charsmax(menu))
-	len += formatex(menu, charsmax(menu), "^n")
-
 	new lUserItemId
 	new lItemArrayId
-	new lUserItemArrayIdList[MENUITEM_IPP]
 
-	getVisibleItems(id, arrayUserItemId[id], lUserItemArrayIdList, sizeof(lUserItemArrayIdList), mPage)
+	len = mg_core_menu_title_create(id, "MR_TITLE_STORAGE", menu, charsmax(menu))
+	len += formatex(menu[len], charsmax(menu) - len, "\d					-		-		-		-		-		-^n")
 
 	for(new i; i < sizeof(lUserItemArrayIdList); i++)
 	{
+		if(lUserItemArrayIdList[i] == -1)
+			break
+
 		lUserItemId = ArrayGetCell(arrayUserItemId[id], lUserItemArrayIdList[i])
 		lItemArrayId = ArrayFindValue(arrayItemId, lUserItemId)
 
@@ -290,34 +313,32 @@ menu_storage_open(id, mPage = 1)
 		ArrayGetString(arrayItemName, lItemArrayId, lItemName, charsmax(lItemName))
 		
 		if(retValue == ITEM_HANDLED)
-			len += formatex(menu[len], charsmax(menu) - len, "\r%d. %L^n", pickId, id, lItemName)
+			len += formatex(menu[len], charsmax(menu) - len, "\r %d. %L^n", pickId, id, lItemName)
 		else
-			len += formatex(menu[len], charsmax(menu) - len, "\d%d. %L^n", pickId, id, lItemName)
+			len += formatex(menu[len], charsmax(menu) - len, "\d %d. %L^n", pickId, id, lItemName)
 
-		gMenuStoragePicks[id][pickId-1] = lUserItemArrayIdList[i]
 		pickId++
 	}
 
-	for(new i = pickId-2; i < MENUITEM_IPP; i++)
+	gMenuStoragePicks[id] = lUserItemArrayIdList
+
+	if(pickId == 1)
 	{
-		gMenuStoragePicks[id][i] = -1
+		len += formatex(menu[len], charsmax(menu) - len, "\y %L^n", id, "MR_MENU_NOAVAILABLEITEM")
 	}
 
-	len += formatex(menu[len], charsmax(menu) - len, "^n")
-	len += formatex(menu[len], charsmax(menu) - len, "\r0.\w %L", id, "MR_MENU_BACKTOMAIN")
-	if(lUserItemCount > MENUITEM_IPP)
-	{
-		if(mPage <= 1)
-			len += formatex(menu[len], charsmax(menu) - len, "\d8. %L^n", id, "MR_MENU_BACK")
-		else
-			len += formatex(menu[len], charsmax(menu) - len, "\r8. \w%L^n", id, "MR_MENU_BACK")
-		
-		if(mPage*MENUITEM_IPP >= lUserItemCount)
-			len += formatex(menu[len], charsmax(menu) - len, "\d9. %L^n", id, "MR_MENU_NEXT")
-		else
-			len += formatex(menu[len], charsmax(menu) - len, "\r9. \w%L^n", id, "MR_MENU_NEXT")
-	}
-	len += formatex(menu[len], charsmax(menu) - len, "\r0.\w %L", id, "MR_MENU_BACKSTEP")
+	len += formatex(menu[len], charsmax(menu) - len, "\d					-		-		-		-		-		-^n")
+	if(mPage <= 1)
+		len += formatex(menu[len], charsmax(menu) - len, "\d						8. %L^n", id, "MR_MENU_BACK")
+	else
+		len += formatex(menu[len], charsmax(menu) - len, "\r						8. \w%L^n", id, "MR_MENU_BACK")
+	
+	if(gMenuStorageNextPage[id])
+		len += formatex(menu[len], charsmax(menu) - len, "\d						9. %L^n", id, "MR_MENU_NEXT")
+	else
+		len += formatex(menu[len], charsmax(menu) - len, "\r						9. \w%L^n", id, "MR_MENU_NEXT")
+	
+	len += formatex(menu[len], charsmax(menu) - len, "\r						0.\w %L", id, "MR_MENU_BACKSTEP")
 
 	gMenuStoragePage[id] = mPage
 
@@ -422,18 +443,18 @@ public menu_item_open(id, userItemArrayId)
 	len = 0
 
 	len = mg_core_menu_title_create(id, "MR_TITLE_ITEM", menu, charsmax(menu))
-	len += formatex(menu[len], charsmax(menu) - len, "^n")
-	len += formatex(menu[len], charsmax(menu) - len, "[#%d]^n", userItemArrayId+1)
-	len += formatex(menu[len], charsmax(menu) - len, "%L: %L^n", id, "MR_MENU_ITEM_NAME", id, lItemName)
-	len += formatex(menu[len], charsmax(menu) - len, "%L: %s^n", id, "MR_MENU_ITEM_TIME", lStrTime)
-	len += formatex(menu[len], charsmax(menu) - len, "^n")
+	len += formatex(menu[len], charsmax(menu) - len, "\d					-		-		-		-		-		-^n")
+	len += formatex(menu[len], charsmax(menu) - len, " [#%d]^n", userItemArrayId+1)
+	len += formatex(menu[len], charsmax(menu) - len, "  %L: %L^n", id, "MR_MENU_ITEM_NAME", id, lItemName)
+	len += formatex(menu[len], charsmax(menu) - len, "  %L: %s^n", id, "MR_MENU_ITEM_TIME", lStrTime)
+	len += formatex(menu[len], charsmax(menu) - len, "\y				««¤===¤»»^n")
 	len += formatex(menu[len], charsmax(menu) - len, "%L^n", id, lItemDesc)
-	len += formatex(menu[len], charsmax(menu) - len, "^n")
-	len += formatex(menu[len], charsmax(menu) - len, "\r1. %L^n", id, "MR_MENU_ITEM1")
-	len += formatex(menu[len], charsmax(menu) - len, "^n")
-	len += formatex(menu[len], charsmax(menu) - len, "\d8. %L^n", id, "MR_MENU_BACK")
-	len += formatex(menu[len], charsmax(menu) - len, "\d9. %L^n", id, "MR_MENU_NEXT")
-	len += formatex(menu[len], charsmax(menu) - len, "\d0. %L^n", id, "MR_MENU_BACKSTEP")
+	len += formatex(menu[len], charsmax(menu) - len, "\y				««¤===¤»»^n")
+	len += formatex(menu[len], charsmax(menu) - len, "\r 1. %L^n", id, "MR_MENU_ITEM1")
+	len += formatex(menu[len], charsmax(menu) - len, "\d					-		-		-		-		-		-^n")
+	len += formatex(menu[len], charsmax(menu) - len, "\d						8. %L^n", id, "MR_MENU_BACK")
+	len += formatex(menu[len], charsmax(menu) - len, "\d						9. %L^n", id, "MR_MENU_NEXT")
+	len += formatex(menu[len], charsmax(menu) - len, "\d						0. %L^n", id, "MR_MENU_BACKSTEP")
 
 	set_pdata_int(id, OFFSET_CSMENUCODE, 0)
 	show_menu(id, KEYSMENU, menu, -1, "MR ItemUse Menu")
@@ -548,12 +569,18 @@ menu_activeitemlist_open(id, mPage = 1)
     
 	new menu[500]
 	new len
-	new lUserItemCount
+	new lUserItemArrayIdList[MENUACTIVEITEMS_IPP] = -1
+	
+	getActiveItems(id, arrayUserItemId[id], lUserItemArrayIdList, sizeof(lUserItemArrayIdList), mPage)
 
-	lUserItemCount = ArraySize(arrayUserItemSortId[id])
+	while(true)
+	{
+		for(new i; i < sizeof(lUserItemArrayIdList); i++)
+		{
+			if(lUserItemArrayIdList[i] == -1)
+				break
+		}
 
-	while(lUserItemCount < mPage*MENUITEM_IPP-MENUITEM_IPP)
-    {
 		mPage -= 1
 				
 		if(mPage < 1)
@@ -561,13 +588,14 @@ menu_activeitemlist_open(id, mPage = 1)
 			menu_loggedin_open(id)
 			return false
 		}
+
+		getActiveItems(id, arrayUserItemId[id], lUserItemArrayIdList, sizeof(lUserItemArrayIdList), mPage)
 	}
 
 	new pickId = 1
 	new lItemName[64]
 	new lUserItemId
 	new lItemArrayId
-	new lUserItemArrayIdList[MENUACTIVEITEMS_IPP]
 
 	new lStrTime[90]
 	new lTimeLen
@@ -577,12 +605,13 @@ menu_activeitemlist_open(id, mPage = 1)
 	new lItemTimeSecond
 
 	len = mg_core_menu_title_create(id, "MR_TITLE_ACTIVEITEMS", menu, charsmax(menu))
-	len += formatex(menu, charsmax(menu), "^n")
-
-	getActiveItems(id, arrayUserItemId[id], lUserItemArrayIdList, sizeof(lUserItemArrayIdList), mPage)
+	len += formatex(menu[len], charsmax(menu) - len, "\d					-		-		-		-		-		-^n")
 
 	for(new i; i < sizeof(lUserItemArrayIdList); i++)
 	{
+		if(lUserItemArrayIdList[i] == -1)
+			break
+
 		lUserItemId = ArrayGetCell(arrayUserItemId[id], lUserItemArrayIdList[i])
 		lItemArrayId = ArrayFindValue(arrayItemId, lUserItemId)
 
@@ -597,41 +626,42 @@ menu_activeitemlist_open(id, mPage = 1)
 					lItemTimeHour < 10 ? "0":"", lItemTimeHour, lItemTimeMinute < 10 ? "0":"", lItemTimeMinute, lItemTimeSecond < 10 ? "0":"", lItemTimeSecond)
 
 		if(retValue == ITEM_HANDLED)
-			len += formatex(menu[len], charsmax(menu) - len, "\r%d. %L %s^n", pickId, id, lItemName, lStrTime)
+			len += formatex(menu[len], charsmax(menu) - len, "\r %d. %L %s^n", pickId, id, lItemName, lStrTime)
 		else
-			len += formatex(menu[len], charsmax(menu) - len, "\d%d. %L %s^n", pickId, id, lItemName, lStrTime)
+			len += formatex(menu[len], charsmax(menu) - len, "\d %d. %L %s^n", pickId, id, lItemName, lStrTime)
 
 		lStrTime[0] = EOS
 		lTimeLen = 0
 
-		gMenuStoragePicks[id][pickId-1] = lUserItemArrayIdList[i]
 		pickId++
 	}
 
-	for(new i = pickId-2; i < MENUITEM_IPP; i++)
-	{
-		gMenuStoragePicks[id][i] = -1
-	}
+	gMenuStoragePicks[id] = lUserItemArrayIdList
 
-	if(lUserItemCount > MENUITEM_IPP)
+	if(pickId == 1)
 	{
-		if(mPage <= 1)
-			len += formatex(menu[len], charsmax(menu) - len, "\d8. %L^n", id, "MR_MENU_BACK")
-		else
-			len += formatex(menu[len], charsmax(menu) - len, "\r8. \w%L^n", id, "MR_MENU_BACK")
-		
-		if(mPage*MENUITEM_IPP >= lUserItemCount)
-			len += formatex(menu[len], charsmax(menu) - len, "\d9. %L^n", id, "MR_MENU_NEXT")
-		else
-			len += formatex(menu[len], charsmax(menu) - len, "\r9. \w%L^n", id, "MR_MENU_NEXT")
+		len += formatex(menu[len], charsmax(menu) - len, "\y %L^n", id, "MR_MENU_NOAVAILABLEITEM")
 	}
-	len += formatex(menu[len], charsmax(menu) - len, "\r0.\w %L", id, "MR_MENU_BACKSTEP")
+	
+	len += formatex(menu[len], charsmax(menu) - len, "\d					-		-		-		-		-		-^n")
+
+	if(mPage <= 1)
+		len += formatex(menu[len], charsmax(menu) - len, "\d						8. %L^n", id, "MR_MENU_BACK")
+	else
+		len += formatex(menu[len], charsmax(menu) - len, "\r						8. \w%L^n", id, "MR_MENU_BACK")
+		
+	if(mPage*MENUITEM_IPP >= lUserItemCount)
+		len += formatex(menu[len], charsmax(menu) - len, "\d						9. %L^n", id, "MR_MENU_NEXT")
+	else
+		len += formatex(menu[len], charsmax(menu) - len, "\r						9. \w%L^n", id, "MR_MENU_NEXT")
+	
+	len += formatex(menu[len], charsmax(menu) - len, "\r						0.\w %L", id, "MR_MENU_BACKSTEP")
 
 	gMenuStoragePage[id] = mPage
 
 	// Fix for AMXX custom menus
 	set_pdata_int(id, OFFSET_CSMENUCODE, 0)
-	show_menu(id, KEYSMENU, menu, -1, "MR UserItems Menu")
+	show_menu(id, KEYSMENU, menu, -1, "MR ActiveItemList Menu")
 
 	remove_task(TASKID_MENUACTITEM+id)
 	set_task(1.0, "menu_activeitemlist_refresh", TASKID_MENUACTITEM+id)
@@ -733,16 +763,16 @@ public menu_activeitem_open(id, userItemArrayId)
 	new len
 
 	len = mg_core_menu_title_create(id, "MR_TITLE_ITEM", menu, charsmax(menu))
-	len += formatex(menu[len], charsmax(menu) - len, "^n")
-	len += formatex(menu[len], charsmax(menu) - len, "[#%d]^n", userItemArrayId+1)
-	len += formatex(menu[len], charsmax(menu) - len, "%L: %L^n", id, "MR_MENU_ITEM_NAME", id, lItemName)
-	len += formatex(menu[len], charsmax(menu) - len, "%L: %s^n", id, "MR_MENU_ITEM_TIME", lStrTime)
-	len += formatex(menu[len], charsmax(menu) - len, "^n")
-	len += formatex(menu[len], charsmax(menu) - len, "%L^n", id, lItemDesc)
-	len += formatex(menu[len], charsmax(menu) - len, "^n")
-	len += formatex(menu[len], charsmax(menu) - len, "\d8. %L^n", id, "MR_MENU_BACK")
-	len += formatex(menu[len], charsmax(menu) - len, "\d9. %L^n", id, "MR_MENU_NEXT")
-	len += formatex(menu[len], charsmax(menu) - len, "\d0. %L^n", id, "MR_MENU_BACKSTEP")
+	len += formatex(menu[len], charsmax(menu) - len, "\d					-		-		-		-		-		-^n")
+	len += formatex(menu[len], charsmax(menu) - len, " [#%d]^n", userItemArrayId+1)
+	len += formatex(menu[len], charsmax(menu) - len, "  %L: %L^n", id, "MR_MENU_ITEM_NAME", id, lItemName)
+	len += formatex(menu[len], charsmax(menu) - len, "  %L: %s^n", id, "MR_MENU_ITEM_TIME", lStrTime)
+	len += formatex(menu[len], charsmax(menu) - len, "\y				««¤===¤»»^n")
+	len += formatex(menu[len], charsmax(menu) - len, " %L^n", id, lItemDesc)
+	len += formatex(menu[len], charsmax(menu) - len, "\d					-		-		-		-		-		-^n")
+	len += formatex(menu[len], charsmax(menu) - len, "\d						8. %L^n", id, "MR_MENU_BACK")
+	len += formatex(menu[len], charsmax(menu) - len, "\d						9. %L^n", id, "MR_MENU_NEXT")
+	len += formatex(menu[len], charsmax(menu) - len, "\d						0. %L^n", id, "MR_MENU_BACKSTEP")
 
 	gMenuActiveItemArrayId[id] = userItemArrayId
 
@@ -823,18 +853,18 @@ public menu_userinfo_open(id)
 	if(!is_user_connected(id) || mg_reg_user_loggedin(id))
 		return false
 		
-	new menu[500], title[60], len
-	
-	mg_core_menu_title_create(id, "MR_TITLE_USERINFO", title, charsmax(title))
+	new menu[500], len
 
-	len += formatex(menu[len], charsmax(menu) - len, "%s^n", title)
-	len += formatex(menu[len], charsmax(menu) - len, "^n")
-	len += formatex(menu[len], charsmax(menu) - len, "\r1.\w %L^n", id, "MR_MENU_USERINFO1")
-	len += formatex(menu[len], charsmax(menu) - len, "\r2.\w %L^n", id, "MR_MENU_USERINFO2")
-	len += formatex(menu[len], charsmax(menu) - len, "^n")
-	len += formatex(menu[len], charsmax(menu) - len, "\r4.\w %L^n", id, "MR_MENU_USERINFO4")
-	len += formatex(menu[len], charsmax(menu) - len, "^n")
-	len += formatex(menu[len], charsmax(menu) - len, "\r0.\w %L", id, "MR_MENU_BACKTOMAIN")
+	len = mg_core_menu_title_create(id, "MR_TITLE_USERINFO", menu, charsmax(menu))
+	len += formatex(menu[len], charsmax(menu) - len, "\d					-		-		-		-		-		-^n")
+	len += formatex(menu[len], charsmax(menu) - len, "  %L^n", id, "MR_MENU_USERINFO0")
+	len += formatex(menu[len], charsmax(menu) - len, "\y				««¤===¤»»^n")
+	len += formatex(menu[len], charsmax(menu) - len, "\r 1.\w %L^n", id, "MR_MENU_USERINFO1")
+	len += formatex(menu[len], charsmax(menu) - len, "\r 2.\w %L^n", id, "MR_MENU_USERINFO2")
+	len += formatex(menu[len], charsmax(menu) - len, "\y				««¤===¤»»^n")
+	len += formatex(menu[len], charsmax(menu) - len, "\r 4.\w %L^n", id, "MR_MENU_USERINFO4")
+	len += formatex(menu[len], charsmax(menu) - len, "\d					-		-		-		-		-		-^n")
+	len += formatex(menu[len], charsmax(menu) - len, "\r						0.\w %L", id, "MR_MENU_BACKTOMAIN")
 
 	// Fix for AMXX custom menus
 	set_pdata_int(id, OFFSET_CSMENUCODE, 0)
@@ -874,28 +904,26 @@ public menu_login_open(id)
 	if(!is_user_connected(id) || mg_reg_user_loggedin(id))
 		return false
 		
-	new menu[500], title[60], len
+	new menu[500], len
 
-	mg_core_menu_title_create(id, "MR_TITLE_LOGIN", title, charsmax(title))
-			
-	len += formatex(menu[len], charsmax(menu) - len, "%s^n", title)
-	len += formatex(menu[len], charsmax(menu) - len, "^n")
+	len = mg_core_menu_title_create(id, "MR_TITLE_LOGIN", menu, charsmax(menu))
+	len += formatex(menu[len], charsmax(menu) - len, "\d					-		-		-		-		-		-^n")
 	
 	if(gUsername[id][0])
-		len += formatex(menu[len], charsmax(menu) - len, "\r1.\w %L \r%s^n", id, "MR_MENU_LOGIN1", gUsername[id])
+		len += formatex(menu[len], charsmax(menu) - len, "\r 1.\w %L \r%s^n", id, "MR_MENU_LOGIN1", gUsername[id])
 	else
-		len += formatex(menu[len], charsmax(menu) - len, "\r1.\w %L \r%L^n", id, "MR_MENU_LOGIN1", id, "MR_MENU_NOUSERNAME")
+		len += formatex(menu[len], charsmax(menu) - len, "\r 1.\w %L \r%L^n", id, "MR_MENU_LOGIN1", id, "MR_MENU_NOUSERNAME")
 	
 	if(gPassword[id][0])
-		len += formatex(menu[len], charsmax(menu) - len, "\r2.\w %L \r*****^n", id, "MR_MENU_LOGIN2")
+		len += formatex(menu[len], charsmax(menu) - len, "\r 2.\w %L \r*****^n", id, "MR_MENU_LOGIN2")
 	else
-		len += formatex(menu[len], charsmax(menu) - len, "\r2.\w %L \r%L^n", id, "MR_MENU_LOGIN2", id, "MR_MENU_NOPASSWORD")
+		len += formatex(menu[len], charsmax(menu) - len, "\r 2.\w %L \r%L^n", id, "MR_MENU_LOGIN2", id, "MR_MENU_NOPASSWORD")
 	
-	len += formatex(menu[len], charsmax(menu) - len, "\r3.\w %L^n", id, "MR_MENU_LOGIN3")
-	len += formatex(menu[len], charsmax(menu) - len, "^n")
-	len += formatex(menu[len], charsmax(menu) - len, "\r5.\w %L^n", id, "MR_MENU_LOGIN4")
-	len += formatex(menu[len], charsmax(menu) - len, "^n")
-	len += formatex(menu[len], charsmax(menu) - len, "\r0.\w %L", id, "MR_MENU_STEPBACK")
+	len += formatex(menu[len], charsmax(menu) - len, "\y				««¤===¤»»^n")
+	len += formatex(menu[len], charsmax(menu) - len, "\r 3.\w %L^n", id, "MR_MENU_LOGIN3")
+	len += formatex(menu[len], charsmax(menu) - len, "\r 4.\w %L^n", id, "MR_MENU_LOGIN4")
+	len += formatex(menu[len], charsmax(menu) - len, "\d					-		-		-		-		-		-^n")
+	len += formatex(menu[len], charsmax(menu) - len, "\r						0.\w %L", id, "MR_MENU_STEPBACK")
 			
 	// Fix for AMXX custom menus
 	set_pdata_int(id, OFFSET_CSMENUCODE, 0)
@@ -948,7 +976,7 @@ public menu_login_handle(id, key)
 			mg_reg_user_login(id, gUsername[id], lHashPassword)
 			mg_core_chatmessage_print(id, MG_CM_FIX, _, "%L", id, "REG_CHAT_LOGINPLSWAIT")
 		}
-		case 4:
+		case 3:
 		{
 			userSetNextLanguage(id)
 			menu_login_open(id)
@@ -967,39 +995,37 @@ public menu_register_open(id)
 	if(!is_user_connected(id) || mg_reg_user_loggedin(id))
 		return false
 		
-	new menu[500], title[60], len
-
-	mg_core_menu_title_create(id, "MR_TITLE_REGISTER", title, charsmax(title))
-			
-	len += formatex(menu[len], charsmax(menu) - len, "%s^n", title)
-	len += formatex(menu[len], charsmax(menu) - len, "^n")
+	new menu[500], len
+		
+	len = mg_core_menu_title_create(id, "MR_TITLE_REGISTER", menu, charsmax(menu))
+	len += formatex(menu[len], charsmax(menu) - len, "\d					-		-		-		-		-		-^n")
 	
 	if(gUsername[id][0])
-		len += formatex(menu[len], charsmax(menu) - len, "\r1.\w %L \r%s^n", id, "MR_MENU_REGISTER1", gUsername[id])
+		len += formatex(menu[len], charsmax(menu) - len, "\r 1.\w %L \r%s^n", id, "MR_MENU_REGISTER1", gUsername[id])
 	else
-		len += formatex(menu[len], charsmax(menu) - len, "\r1.\w %L \r%L^n", id, "MR_MENU_REGISTER1", id, "MR_MENU_NOUSERNAME")
+		len += formatex(menu[len], charsmax(menu) - len, "\r 1.\w %L \r%L^n", id, "MR_MENU_REGISTER1", id, "MR_MENU_NOUSERNAME")
 	
 	if(gPassword[id][0])
-		len += formatex(menu[len], charsmax(menu) - len, "\r2.\w %L \r*****^n", id, "MR_MENU_REGISTER2")
+		len += formatex(menu[len], charsmax(menu) - len, "\r 2.\w %L \r*****^n", id, "MR_MENU_REGISTER2")
 	else
-		len += formatex(menu[len], charsmax(menu) - len, "\r2.\w %L \r%L^n", id, "MR_MENU_REGISTER2", id, "MR_MENU_NOPASSWORD")
+		len += formatex(menu[len], charsmax(menu) - len, "\r 2.\w %L \r%L^n", id, "MR_MENU_REGISTER2", id, "MR_MENU_NOPASSWORD")
 	
 	
 	if(gPasswordCheck[id][0])
-		len += formatex(menu[len], charsmax(menu) - len, "\r3.\w %L \r*****^n", id, "MR_MENU_REGISTER3")
+		len += formatex(menu[len], charsmax(menu) - len, "\r 3.\w %L \r*****^n", id, "MR_MENU_REGISTER3")
 	else
-		len += formatex(menu[len], charsmax(menu) - len, "\r3.\w %L \r%L^n", id, "MR_MENU_REGISTER3", id, "MR_MENU_NOPASSWORD")
+		len += formatex(menu[len], charsmax(menu) - len, "\r 3.\w %L \r%L^n", id, "MR_MENU_REGISTER3", id, "MR_MENU_NOPASSWORD")
 
 	if(gEMail[id][0])
-		len += formatex(menu[len], charsmax(menu) - len, "\r4.\w %L \r%s^n", id, "MR_MENU_REGISTER4", gEMail[id])
+		len += formatex(menu[len], charsmax(menu) - len, "\r 4.\w %L \r%s^n", id, "MR_MENU_REGISTER4", gEMail[id])
 	else
-		len += formatex(menu[len], charsmax(menu) - len, "\r4.\w %L \r%s^n", id, "MR_MENU_REGISTER4", "......@****.***")
+		len += formatex(menu[len], charsmax(menu) - len, "\r 4.\w %L \r%s^n", id, "MR_MENU_REGISTER4", "......@****.***")
 	
-	len += formatex(menu[len], charsmax(menu) - len, "\r5.\w %L^n", id, "MR_MENU_REGISTER5")
-	len += formatex(menu[len], charsmax(menu) - len, "^n")
-	len += formatex(menu[len], charsmax(menu) - len, "\r7.\w %L^n", id, "MR_MENU_REGISTER6")
-	len += formatex(menu[len], charsmax(menu) - len, "^n")
-	len += formatex(menu[len], charsmax(menu) - len, "\r0.\w %L", id, "MR_MENU_STEPBACK")
+	len += formatex(menu[len], charsmax(menu) - len, "\y				««¤===¤»»^n")
+	len += formatex(menu[len], charsmax(menu) - len, "\r 5.\w %L^n", id, "MR_MENU_REGISTER5")
+	len += formatex(menu[len], charsmax(menu) - len, "\r 6.\w %L^n", id, "MR_MENU_REGISTER6")
+	len += formatex(menu[len], charsmax(menu) - len, "\d					-		-		-		-		-		-^n")
+	len += formatex(menu[len], charsmax(menu) - len, "\r						0.\w %L", id, "MR_MENU_STEPBACK")
 			
 	// Fix for AMXX custom menus
 	set_pdata_int(id, OFFSET_CSMENUCODE, 0)
@@ -1081,7 +1107,7 @@ public menu_register_handle(id, key)
 			mg_reg_user_register(id, gUsername[id], lHashPassword, gEMail[id])
 			mg_core_chatmessage_print(id, MG_CM_FIX, _, "%L", id, "REG_CHAT_REGPLSWAIT")
 		}
-		case 6:
+		case 5:
 		{
 			userSetNextLanguage(id)
 			menu_register_open(id)
@@ -1660,54 +1686,20 @@ checkUserItemAccessibility(id, userItemArrayId)
 	return false
 }
 
-getVisibleItems(id, Array:userItemIdArray, itemList[], itemPerPage, page)
+bool:getVisibleItems(id, Array:userItemIdArray, itemList[], itemPerPage, page)
 {
 	new count
 	new lArrayStatus
 	new lArraySize = ArraySize(userItemIdArray)
+	new bool:lNextPage = false
 
 	for(new i; i < lArraySize; i++)
 	{
-		if(count < itemPerPage*(page-1))
-		{
-			count++
-			continue
-		}
-
-		if(ArrayFindValue(arrayItemId, ArrayGetCell(userItemIdArray, i)) == -1)
-		{
-			continue
-		}
-
-		if(lArrayStatus >= itemPerPage - 1)
-		{
-			break
-		}
-
 		if(checkUserItemAccessibility(id, i))
 		{
 			continue
 		}
 
-		itemList[lArrayStatus] = i
-		lArrayStatus++
-	}
-
-	while(lArrayStatus >= itemPerPage - 1)
-	{
-		itemList[lArrayStatus] = -1
-		lArrayStatus++
-	}
-}
-
-getActiveItems(id, Array:userItemIdArray, itemList[], itemPerPage, page)
-{
-	new count
-	new lArrayStatus
-	new lArraySize = ArraySize(userItemIdArray)
-
-	for(new i; i < lArraySize; i++)
-	{
 		if(count < itemPerPage*(page-1))
 		{
 			count++
@@ -1721,23 +1713,83 @@ getActiveItems(id, Array:userItemIdArray, itemList[], itemPerPage, page)
 
 		if(lArrayStatus >= itemPerPage - 1)
 		{
-			break
-		}
+			for(++i; i < lArraySize; i++)
+			{
+				if(checkUserItemActivity(id, i))
+				{
+					continue
+				}
 
-		if(checkUserItemActivity(id, i))
-		{
-			continue
+				lNextPage = true
+				break
+			}
+			break
 		}
 
 		itemList[lArrayStatus] = i
 		lArrayStatus++
 	}
 
-	while(lArrayStatus >= itemPerPage - 1)
+	while(lArrayStatus <= itemPerPage - 1)
 	{
 		itemList[lArrayStatus] = -1
 		lArrayStatus++
 	}
+
+	return lNextPage
+}
+
+bool:getActiveItems(id, Array:userItemIdArray, itemList[], itemPerPage, page)
+{
+	new count
+	new lArrayStatus
+	new lArraySize = ArraySize(userItemIdArray)
+	new bool:lNextPage = false
+
+	for(new i; i < lArraySize; i++)
+	{
+		if(!checkUserItemActivity(id, i))
+		{
+			continue
+		}
+
+		if(count < itemPerPage*(page-1))
+		{
+			count++
+			continue
+		}
+
+		if(ArrayFindValue(arrayItemId, ArrayGetCell(userItemIdArray, i)) == -1)
+		{
+			continue
+		}
+
+		if(lArrayStatus >= itemPerPage - 1)
+		{
+			for(++i; i < lArraySize; i++)
+			{
+				if(!checkUserItemActivity(id, i))
+				{
+					continue
+				}
+
+				lNextPage = true
+				break
+			}
+			break
+		}
+
+		itemList[lArrayStatus] = i
+		lArrayStatus++
+	}
+
+	while(lArrayStatus <= itemPerPage - 1)
+	{
+		itemList[lArrayStatus] = -1
+		lArrayStatus++
+	}
+
+	return lNextPage
 }
 
 unixToItemTime(unixTime, &Days = 0, &Hours = 0, &Minutes = 0, &Seconds = 0)
