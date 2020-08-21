@@ -371,8 +371,6 @@ public menu_storage_handle(id, key)
 		return PLUGIN_HANDLED
 	}
 
-	new lUserItemCount = ArraySize(arrayUserItemId[id])
-
 	switch(key)
 	{
 		case 7:
@@ -385,7 +383,7 @@ public menu_storage_handle(id, key)
 		}
 		case 8:
 		{
-			if(gMenuStoragePage[id]*MENUITEM_IPP < lUserItemCount)
+			if(gMenuStorageNextPage[id])
 			{
 				gMenuStoragePage[id]++
 				menu_storage_open(id, gMenuStoragePage[id])
@@ -571,7 +569,7 @@ menu_activeitemlist_open(id, mPage = 1)
 	new len
 	new lUserItemArrayIdList[MENUACTIVEITEMS_IPP] = -1
 	
-	getActiveItems(id, arrayUserItemId[id], lUserItemArrayIdList, sizeof(lUserItemArrayIdList), mPage)
+	gMenuActiveItemsNextPage[id] = getActiveItems(id, arrayUserItemId[id], lUserItemArrayIdList, sizeof(lUserItemArrayIdList), mPage)
 
 	while(true)
 	{
@@ -589,7 +587,7 @@ menu_activeitemlist_open(id, mPage = 1)
 			return false
 		}
 
-		getActiveItems(id, arrayUserItemId[id], lUserItemArrayIdList, sizeof(lUserItemArrayIdList), mPage)
+		gMenuActiveItemsNextPage[id] =  getActiveItems(id, arrayUserItemId[id], lUserItemArrayIdList, sizeof(lUserItemArrayIdList), mPage)
 	}
 
 	new pickId = 1
@@ -650,7 +648,7 @@ menu_activeitemlist_open(id, mPage = 1)
 	else
 		len += formatex(menu[len], charsmax(menu) - len, "\r						8. \w%L^n", id, "MR_MENU_BACK")
 		
-	if(mPage*MENUITEM_IPP >= lUserItemCount)
+	if(gMenuActiveItemsNextPage[id])
 		len += formatex(menu[len], charsmax(menu) - len, "\d						9. %L^n", id, "MR_MENU_NEXT")
 	else
 		len += formatex(menu[len], charsmax(menu) - len, "\r						9. \w%L^n", id, "MR_MENU_NEXT")
@@ -709,8 +707,6 @@ public menu_activeitemlist_handle(id, key)
 		return PLUGIN_HANDLED
 	}
 
-	new lUserItemCount = ArraySize(arrayItemId)
-
 	switch(key)
 	{
 		case 7:
@@ -723,7 +719,7 @@ public menu_activeitemlist_handle(id, key)
 		}
 		case 8:
 		{
-			if(gMenuActiveItemsPage[id]*MENUITEM_IPP < lUserItemCount)
+			if(gMenuActiveItemsNextPage[id])
 			{
 				gMenuActiveItemsPage[id]++
 				menu_activeitemlist_open(id, gMenuActiveItemsPage[id])
