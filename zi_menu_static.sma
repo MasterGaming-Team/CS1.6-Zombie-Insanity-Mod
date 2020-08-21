@@ -83,15 +83,15 @@ public menu_main_open(id)
 	ArrayGetString(arrayClassHumanName, zi_core_class_human_arrayslot_get(zi_core_client_human_get(id, true)), lClassHumanName, charsmax(lClassHumanName))
 	
 	len = mg_core_menu_title_create(id, "MS_TITLE_MAIN", menu, charsmax(menu), true)
-	len += formatex(menu[len], charsmax(menu)-len, "\d       -   -   -   -   -   - ^n")
+	len += formatex(menu[len], charsmax(menu) - len, "\d					-		-		-		-		-		-^n")
 	len += formatex(menu[len], charsmax(menu)-len, "\r 1. \w%L^n", id, "MS_MENU_MAIN1", id, "WEAPONNAME") // Fegyverek
 	len += formatex(menu[len], charsmax(menu)-len, "\r 2. \w%L^n", id, "MS_MENU_MAIN2", id, lClassZombieSubName) // Zombie kasztok
 	len += formatex(menu[len], charsmax(menu)-len, "\r 3. \w%L^n", id, "MS_MENU_MAIN3", id, lClassHumanName) // Ember kasztok
 	len += formatex(menu[len], charsmax(menu)-len, "\r 4. \w%L^n", id, "MS_MENU_MAIN4", zi_core_client_ammo_get(id)) // Extra cuccok
-	len += formatex(menu[len], charsmax(menu)-len, "\y      ««¤===¤»»  ^n")
+	len += formatex(menu[len], charsmax(menu) - len, "\y				««¤===¤»»^n")
 	len += formatex(menu[len], charsmax(menu)-len, "\r 5. \w%L^n", id, "MS_MENU_MAIN5") // *Áruház*
 	len += formatex(menu[len], charsmax(menu)-len, "\r 6. \w%L^n", id, "MS_MENU_MAIN6") // *VIP Menü*
-	len += formatex(menu[len], charsmax(menu)-len, "\y      ««¤===¤»»  ^n")
+	len += formatex(menu[len], charsmax(menu) - len, "\y				««¤===¤»»^n")
 	len += formatex(menu[len], charsmax(menu)-len, "\r 7. \w%L^n", id, "MS_MENU_MAIN7") // Beállítások
 	
 	if(mg_reg_user_loggedin(id))
@@ -100,8 +100,8 @@ public menu_main_open(id)
 		len += formatex(menu[len], charsmax(menu)-len, "\r 8. \w%L^n", id, "MS_MENU_MAIN8REGISTER") // Reg menü
 
 	len += formatex(menu[len], charsmax(menu)-len, "\r 9. \w%L^n", id, "MS_MENU_MAIN9") // Nyelvválasztás
-	len += formatex(menu[len], charsmax(menu)-len, "\d       -   -   -   -   -   - ^n")
-	len += formatex(menu[len], charsmax(menu)-len, "\r          0. \w%L", id, "MS_MENU_EXIT")
+	len += formatex(menu[len], charsmax(menu) - len, "\d					-		-		-		-		-		-^n")
+	len += formatex(menu[len], charsmax(menu)-len, "\r						0. \w%L", id, "MS_MENU_EXIT")
 
 	// Fix for AMXX custom menus
 	set_pdata_int(id, OFFSET_CSMENUCODE, 0)
