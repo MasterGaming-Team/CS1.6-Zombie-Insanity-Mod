@@ -504,7 +504,7 @@ public menu_item_handle(id, key)
 				if(itemCount >= lArraySize)
 				{
 					menu_storage_open(id, gMenuStoragePage[id])
-					break
+					return PLUGIN_HANDLED
 				}
 
 				if(i <= 0)
@@ -530,7 +530,7 @@ public menu_item_handle(id, key)
 				if(itemCount >= lArraySize)
 				{
 					menu_storage_open(id, gMenuStoragePage[id])
-					break
+					return PLUGIN_HANDELD
 				}
 
 				if(i+1 >= lArraySize)
@@ -782,7 +782,7 @@ public menu_activeitem_handle(id, key)
 				if(itemCount >= lArraySize)
 				{
 					menu_activeitemlist_open(id, gMenuActiveItemsPage[id])
-					break
+					return PLUGIN_HANDLED
 				}
 
 				if(i <= 0)
@@ -808,7 +808,7 @@ public menu_activeitem_handle(id, key)
 				if(itemCount >= lArraySize)
 				{
 					menu_activeitemlist_open(id, gMenuActiveItemsPage[id])
-					break
+					return PLUGIN_HANDLED
 				}
 
 				if(i+1 >= lArraySize)
